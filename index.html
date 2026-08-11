@@ -1,182 +1,191 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hippostat — Programme du jour</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="app.js" defer></script>
 
-<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c5dfb3a7a4ea4e71973b424040879340"}'></script><!-- End Cloudflare Web Analytics -->
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5N80148K3P"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-  gtag('config', 'G-5N80148K3P');
-</script>
+  <title>HIPPOSTAT</title>
 
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 </head>
-
-<header class="site-header">
-
-  <div class="logo-zone">
-
-    <img
-      src="images/logo-hippostat.png"
-      alt="Logo HIPPOSTAT"
-      class="logo-hippostat"
-    >
-
-    <div class="titre-site">
-
-      <h1>HIPPOSTAT</h1>
-
-      <p>L'analyse visuelle des courses</p>
-
-    </div>
-
-  </div>
-
-</header>
-
-
 
 <body>
 
+  <header class="site-header">
 
-  <main class="page">
-    
-    <div id="chargement" class="message">Chargement du programme…</div>
-    <div id="erreur" class="message error hidden"></div>
-    <section class="selection-chevaux">
+    <div class="logo-zone">
 
-  
+      <img
+        src="images/logo-hippostat.png"
+        alt="Logo HIPPOSTAT"
+        class="logo-hippostat"
+      >
 
-   
-    <section id="contenu" class="hidden">
-      <div class="controls">
-        <div class="control-group">
-          <label for="selectionCourse">Programme du jour</label>
-          <select id="selectionCourse"></select>
+      <div>
+        <div class="titre-site">
+          HIPPOSTAT
+        </div>
+
+        <div class="sous-titre-site">
+          Analyse visuelle des courses hippiques
         </div>
       </div>
 
-   <section
-  id="selectionChevaux"
-  class="selection-chevaux hidden"
->
-  
-
-    <div class="selection-actions">
-
-      <button
-        type="button"
-        id="selectionnerTous"
-      >
-        Tous
-      </button>
-
-      <button
-        type="button"
-        id="deselectionnerTous"
-      >
-        Aucun
-      </button>
-
     </div>
 
-  </div>
+    <nav class="navigation-principale">
 
-  <div
-    id="listeChevaux"
-    class="liste-chevaux"
-  ></div>
-</section>
+      <a
+        href="index.html"
+        class="actif"
+      >
+        Accueil
+      </a>
 
-  <div
-    id="listeChevaux"
-    class="liste-chevaux"
-  ></div>
-      <div id="courseInfo" class="course-info"></div>
+      <a
+        href="programme.html"
+      >
+        Programme du jour
+      </a>
 
-         <div class="selection-chevaux-header">
-     <h2>Chevaux à comparer</h2>
-    </div>
-      <div class="legende-performances">
+      <a
+        href="modedemploi.html"
+      >
+        Mode d'emploi
+      </a>
 
-      <span><i class="c1"></i>1er</span>
+    </nav>
 
-      <span><i class="c2"></i>2e</span>
+  </header>
 
-      <span><i class="c3"></i>3e</span>
 
-      <span><i class="c4"></i>4-5e</span>
+  <main class="contenu-accueil">
 
-      <span><i class="c5"></i>6-7e</span>
+    <section class="hero-accueil">
 
-    
+      <h1>
+        Visualisez rapidement l'historique des chevaux
+      </h1>
 
-   <div class="chart-container chart-container-sombre">
-  <canvas id="gainsParCheval"></canvas>
-</div>
+      <p>
+        HIPPOSTAT est un outil d'aide à l'analyse
+        des courses hippiques basé sur la lecture
+        graphique des performances passées.
+      </p>
 
-<div class="chart-container chart-container-bulles">
-  <canvas id="evolutionPerformances"></canvas>
-</div>
+      <div class="actions-accueil">
 
-      
+        <a
+          class="bouton-principal"
+          href="programme.html"
+        >
+          Voir le programme du jour
+        </a>
+
+        <a
+          class="bouton-secondaire"
+          href="modedemploi.html"
+        >
+          Mode d'emploi
+        </a>
+
+      </div>
+
     </section>
 
-    <footer class="site-footer">
 
-  <div class="site-footer-identite">
+    <section class="blocs-accueil">
 
-    <strong>HIPPOSTAT</strong>
+      <article class="bloc-accueil">
 
-    <span class="site-footer-version">
-      Version 1.0 DEMO
-    </span>
+        <h2>
+          Historique des performances
+        </h2>
 
-  </div>
+        <p>
+          Visualisez les dernières courses
+          des chevaux engagés et comparez
+          rapidement leur évolution.
+        </p>
 
-  <p class="site-footer-description">
-    Outil d'aide à l'analyse visuelle des courses hippiques.
-  </p>
+      </article>
 
-  <p class="site-footer-avertissement">
-    Les informations sont fournies à titre indicatif.
-    HIPPOSTAT est un outil d'aide à l'analyse et ne constitue pas un pronostic.
-  </p>
 
-  <div class="site-footer-actions">
+      <article class="bloc-accueil">
 
-    <a
-      class="bouton-footer"
-      href="mailto:hippostat.fr@gmail.com?subject=Avis%20sur%20HIPPOSTAT"
-    >
-      ✉ Donner mon avis
-    </a>
+        <h2>
+          Comparaison visuelle
+        </h2>
 
-    <a
-      class="bouton-footer bouton-footer-secondaire"
-      href="mailto:hippostat.fr@gmail.com?subject=Contact%20HIPPOSTAT"
-    >
-      📧 Contact
-    </a>
+        <p>
+          Sélectionnez uniquement les chevaux
+          que vous souhaitez comparer et
+          concentrez-vous sur les profils
+          les plus intéressants.
+        </p>
 
-  </div>
+      </article>
 
-  <p class="site-footer-copyright">
-    © 2026 HIPPOSTAT
-  </p>
 
-</footer>
+      <article class="bloc-accueil">
+
+        <h2>
+          Aide à l'analyse
+        </h2>
+
+        <p>
+          HIPPOSTAT ne fournit pas de pronostic.
+          Il permet d'organiser et de visualiser
+          les informations utiles à l'analyse
+          du turfiste.
+        </p>
+
+      </article>
+
+    </section>
+
+
+    <section class="section-demo">
+
+      <span class="badge-demo">
+        VERSION DEMO
+      </span>
+
+      <p>
+        Le site est actuellement en phase de test.
+        Vos remarques et suggestions sont les bienvenues.
+      </p>
+
+    </section>
+
   </main>
+
+
+  <footer class="site-footer">
+
+    <strong>
+      HIPPOSTAT
+    </strong>
+
+    <p>
+      Outil d'aide à l'analyse visuelle
+      des courses hippiques.
+    </p>
+
+    <p>
+      © 2026 HIPPOSTAT
+    </p>
+
+  </footer>
+
 </body>
+
 </html>

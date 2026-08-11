@@ -344,5 +344,458 @@ select { width: 100%; padding: 10px 12px; border: 1px solid #cbd3dc; border-radi
   white-space: nowrap;
 }
 
+.navigation-principale {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.navigation-principale a {
+  color: #475569;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.navigation-principale a:hover,
+.navigation-principale a.actif {
+  color: #1f3349;
+}
+
+.contenu-accueil {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.hero-accueil {
+  text-align: center;
+  padding: 35px 20px 45px;
+}
+
+.hero-accueil h1 {
+  max-width: 760px;
+  margin: 0 auto 20px;
+}
+
+.hero-accueil p {
+  max-width: 700px;
+  margin: 0 auto;
+  color: #64748b;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.actions-accueil {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.bouton-principal,
+.bouton-secondaire {
+  display: inline-block;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.bouton-principal {
+  background: #25364a;
+  color: white;
+}
+
+.bouton-secondaire {
+  border: 1px solid #25364a;
+  color: #25364a;
+  background: white;
+}
+
+.blocs-accueil {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(240px, 1fr)
+    );
+  gap: 20px;
+}
+
+.bloc-accueil {
+  padding: 22px;
+  background: white;
+  border-radius: 10px;
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.07);
+}
+
+.bloc-accueil h2 {
+  margin-top: 0;
+  color: #25364a;
+}
+
+.bloc-accueil p {
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.section-demo {
+  margin-top: 35px;
+  text-align: center;
+}
+
+.badge-demo {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 5px;
+  background: #e8eef5;
+  color: #25364a;
+  font-size: 12px;
+  font-weight: 700;
+}
+.navigation-principale {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.navigation-principale a {
+  color: #475569;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.navigation-principale a:hover,
+.navigation-principale a.actif {
+  color: #1f3349;
+}
+
+.contenu-accueil {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.hero-accueil {
+  text-align: center;
+  padding: 55px 20px;
+}
+
+.hero-accueil h1 {
+  max-width: 760px;
+  margin: 0 auto 20px;
+}
+
+.hero-accueil p {
+  max-width: 700px;
+  margin: 0 auto;
+  color: #64748b;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.actions-accueil {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.bouton-principal,
+.bouton-secondaire {
+  display: inline-block;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.bouton-principal {
+  background: #25364a;
+  color: white;
+}
+
+.bouton-secondaire {
+  border: 1px solid #25364a;
+  color: #25364a;
+  background: white;
+}
+
+.blocs-accueil {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(240px, 1fr)
+    );
+  gap: 20px;
+}
+
+.bloc-accueil {
+  padding: 22px;
+  background: white;
+  border-radius: 10px;
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.07);
+}
+
+.bloc-accueil h2 {
+  margin-top: 0;
+  color: #25364a;
+}
+
+.bloc-accueil p {
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.section-demo {
+  margin-top: 35px;
+  text-align: center;
+}
+
+.badge-demo {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 5px;
+  background: #e8eef5;
+  color: #25364a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 16px 30px;
+
+  background: #1f3045;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15);
+}
 
 
+/* Zone logo + titre */
+
+.logo-zone {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+
+.logo-hippostat {
+  width: 75px;
+  height: 75px;
+  object-fit: contain;
+}
+
+
+.titre-site {
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+
+.sous-titre-site {
+  color: #cbd5e1;
+  font-size: 14px;
+  margin-top: 3px;
+}
+
+
+/* Menu */
+
+.navigation-principale {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+
+.navigation-principale a {
+  color: #e2e8f0;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+
+.navigation-principale a:hover {
+  color: white;
+}
+
+
+.navigation-principale a.actif {
+  color: white;
+  border-bottom: 2px solid white;
+  padding-bottom: 5px;
+}
+
+
+.site-footer {
+  margin-top: 40px;
+  padding: 25px 20px;
+
+  text-align: center;
+
+  color: #64748b;
+  font-size: 14px;
+
+  border-top: 1px solid #e2e8f0;
+}
+
+.site-footer strong {
+  color: #1f3045;
+}
+
+.site-footer p {
+  margin: 5px 0;
+}
+
+
+/* ==========================================================
+   MODE D'EMPLOI
+   ========================================================== */
+
+.contenu-methodologie {
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: 45px 25px 60px;
+}
+
+
+/* Introduction */
+
+.intro-methodologie {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.intro-methodologie h1 {
+  margin: 0 0 18px;
+  color: #1f3045;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.intro-methodologie p {
+  max-width: 760px;
+  margin: 8px auto;
+  color: #64748b;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+
+/* Blocs du mode d'emploi */
+
+.bloc-methodologie {
+  background: #ffffff;
+
+  padding: 25px 30px;
+  margin-bottom: 20px;
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.07);
+}
+
+.bloc-methodologie h2 {
+  margin: 0 0 15px;
+
+  color: #1f3045;
+
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.bloc-methodologie p {
+  margin: 8px 0;
+
+  color: #64748b;
+
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.bloc-methodologie ul {
+  margin: 15px 0 5px;
+  padding-left: 25px;
+}
+
+.bloc-methodologie li {
+  margin-bottom: 7px;
+
+  color: #64748b;
+
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+
+/* Dernier bloc : avertissement */
+
+.bloc-methodologie.important {
+  border-left: 4px solid #1f3045;
+}
+
+
+/* Pied de page */
+
+.site-footer {
+  margin-top: 35px;
+  padding: 25px 20px;
+
+  text-align: center;
+
+  color: #64748b;
+  font-size: 13px;
+
+  border-top: 1px solid #e2e8f0;
+}
+
+.site-footer strong {
+  color: #1f3045;
+  font-size: 15px;
+}
+
+.site-footer p {
+  margin: 5px 0;
+}
+
+
+/* ==========================================================
+   VERSION MOBILE
+   ========================================================== */
+
+@media (max-width: 700px) {
+
+  .contenu-methodologie {
+    padding: 25px 15px 40px;
+  }
+
+  .intro-methodologie h1 {
+    font-size: 26px;
+  }
+
+  .bloc-methodologie {
+    padding: 20px;
+  }
+
+  .bloc-methodologie h2 {
+    font-size: 19px;
+  }
+
+}

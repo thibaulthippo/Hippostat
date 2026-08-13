@@ -799,3 +799,29 @@ select { width: 100%; padding: 10px 12px; border: 1px solid #cbd3dc; border-radi
   }
 
 }
+
+/* =========================================
+   GRAPHIQUE COMPARATIF
+   ========================================= */
+
+.chart-container-comparatif {
+  position: relative;
+
+  width: 100%;
+  height: 430px;
+
+  margin-top: 30px;
+
+  background: #ffffff;
+
+  border-radius: 10px;
+
+  padding: 20px;
+}
+
+.info-graphique-comparatif {
+  margin: 8px 0 12px;
+  font-size: 13px;
+  color: #64748b;
+  text-align: center;
+}

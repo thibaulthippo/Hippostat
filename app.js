@@ -41,6 +41,8 @@
 
     let graphiqueEvolution = null;
 
+    let graphiqueComparatif = null;
+
    
     /*
      * Palette utilisée pour les participations historiques.
@@ -1172,6 +1174,9 @@ points.push({
   distance:
     ligne.DistanceHistorique || "",
 
+  poids:
+  ligne.PoidsHistorique || "",
+
   nombrePartants:
     ligne.NombrePartantsHistorique || "",
 
@@ -1259,6 +1264,7 @@ points.push({
     document.getElementById(
       "evolutionPerformances"
     );
+
 
   if (!canvas) {
 
@@ -1505,6 +1511,10 @@ y: {
         }
       }
     });
+
+    afficherGraphiqueComparatif(
+  lignesCourse
+);
 }
 
 
@@ -2222,6 +2232,10 @@ function rafraichirGraphiquesSelection(
   afficherGraphiqueEvolution(
     lignesFiltrees
   );
+
+  afficherGraphiqueComparatif(
+  lignesCourse
+);
 }
 
 function formaterResultatHistorique(ligne) {
@@ -2354,6 +2368,17 @@ function construireInfobulle(point) {
     "🏇 ",
     disciplineDistance
   );
+
+  /*
+ * POIDS
+ */
+ajouterLigneInfobulle(
+  lignes,
+  "⚖️ ",
+  point.poids
+    ? point.poids + " kg"
+    : ""
+);
 
   ajouterLigneInfobulle(
     lignes,
@@ -2851,4 +2876,2417 @@ function mettreAJourGraphiquesSelection() {
   afficherGraphiqueEvolution(
     lignesFiltrees
   );
+}
+
+const pluginLienDistanceReduction = {
+
+  id:
+    "lienDistanceReduction",
+
+
+  afterDatasetsDraw(chart) {
+
+    const ctx =
+      chart.ctx;
+
+    const datasets =
+      chart.data.datasets;
+
+
+    /*
+     * Recherche des datasets Distance.
+     */
+    datasets.forEach(
+      function(datasetDistance, indexDistance) {
+
+        if (
+          datasetDistance.yAxisID !==
+          "yDistance"
+        ) {
+          return;
+        }
+
+
+        /*
+         * Recherche du dataset Réduction
+         * correspondant au même cheval.
+         */
+        const indexReduction =
+          datasets.findIndex(
+            function(dataset) {
+
+              return (
+                dataset.yAxisID ===
+                  "yReduction" &&
+                dataset.cleCheval ===
+                  datasetDistance.cleCheval
+              );
+            }
+          );
+
+
+        if (
+          indexReduction === -1
+        ) {
+          return;
+        }
+
+
+        const metaDistance =
+          chart.getDatasetMeta(
+            indexDistance
+          );
+
+        const metaReduction =
+          chart.getDatasetMeta(
+            indexReduction
+          );
+
+
+        datasetDistance.data.forEach(
+          function(pointDistance, i) {
+
+            /*
+             * Recherche de la réduction
+             * ayant exactement la même date.
+             */
+            const indexPointReduction =
+              datasets[indexReduction]
+                .data
+                .findIndex(
+                  function(pointReduction) {
+
+                    return (
+                      pointReduction.x ===
+                      pointDistance.x
+                    );
+                  }
+                );
+
+
+            if (
+              indexPointReduction === -1
+            ) {
+              return;
+            }
+
+
+            const barre =
+              metaDistance.data[i];
+
+            const point =
+              metaReduction.data[
+                indexPointReduction
+              ];
+
+
+            if (
+              !barre ||
+              !point
+            ) {
+              return;
+            }
+
+
+            /*
+             * Trait entre le sommet
+             * de la barre et le point.
+             */
+            ctx.save();
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+              barre.x,
+              barre.y
+            );
+
+            ctx.lineTo(
+              point.x,
+              point.y
+            );
+
+            ctx.strokeStyle =
+              datasetDistance.borderColor ||
+              datasetDistance.backgroundColor;
+
+            ctx.globalAlpha =
+              0.60;
+
+            ctx.lineWidth =
+              1.5;
+
+            ctx.stroke();
+
+            ctx.restore();
+          }
+        );
+      }
+    );
+  }
+};
+
+function afficherGraphiqueComparatifTrot(
+  canvas,
+  lignesComparaison,
+  partants
+) {
+
+  /*
+   * Nettoyage ancien graphique
+   */
+  if (graphiqueComparatif) {
+
+    graphiqueComparatif.destroy();
+
+    graphiqueComparatif = null;
+  }
+
+
+  const datasets = [];
+
+  let distanceMin = 0;
+  let distanceMax = 3000;
+  /*
+   * Une couleur par cheval,
+   * cohérente avec les autres graphiques.
+   */
+  partants.forEach(
+    function(partant, indexPartant) {
+
+        const numeroPartant =
+  partant.NuméroProgramme ||
+  partant.NumeroProgramme ||
+  partant["N°"] ||
+  ""
+
+      const clePartant =
+        construireClePartant(
+          partant
+        );
+
+      const couleurCheval =
+        obtenirCouleurCheval(
+          indexPartant,
+          partants.length
+        );
+
+
+      const pointsDistance = [];
+      const pointsReduction = [];
+
+
+      lignesComparaison.forEach(
+        function(ligne) {
+
+          if (
+            construireClePartant(ligne) !==
+            clePartant
+          ) {
+            return;
+          }
+
+
+          const timestamp =
+            convertirDateEnTimestamp(
+              ligne.DateHistorique
+            );
+
+          if (timestamp === null) {
+            return;
+          }
+
+
+          /*
+           * DISTANCE
+           */
+  /*
+ * DISTANCE
+ */
+const distance =
+  parseFloat(
+    String(
+      ligne.DistanceHistorique || ""
+    )
+      .replace(/[^\d.,-]/g, "")
+      .replace(",", ".")
+  );
+
+
+/*
+ * REDUCTION KILOMETRIQUE
+ */
+const reduction =
+  convertirReductionEnSecondes(
+    ligne.RéductionKm ||
+    ligne.ReductionKm ||
+    ligne.ReductionHistorique ||
+    ""
+  );
+
+
+/*
+ * On conserve uniquement les courses
+ * possédant à la fois :
+ *
+ * - une distance
+ * - une réduction kilométrique
+ */
+if (
+  isNaN(distance) ||
+  reduction === null ||
+  isNaN(reduction)
+) {
+  return;
+}
+
+
+/*
+ * DISTANCE
+ */
+pointsDistance.push({
+
+  x:
+    timestamp,
+
+  y:
+    distance,
+
+  cheval:
+    ligne.Cheval || "",
+
+  date:
+    ligne.DateHistorique || ""
+});
+
+
+/*
+ * REDUCTION
+ */
+pointsReduction.push({
+
+  x:
+    timestamp,
+
+  y:
+    reduction,
+
+  cheval:
+    ligne.Cheval || "",
+
+  date:
+    ligne.DateHistorique || ""
+});
+
+         
+
+        }
+      );
+
+
+  /*
+   * =========================================
+   * CALCUL AUTOMATIQUE DE L'ECHELLE DISTANCE
+   * =========================================
+   */
+
+  const toutesDistances =
+    datasets
+      .filter(
+        function(dataset) {
+
+          return (
+            dataset.yAxisID ===
+            "yDistance"
+          );
+        }
+      )
+      .flatMap(
+        function(dataset) {
+
+          return dataset.data.map(
+            function(point) {
+
+              return point.y;
+            }
+          );
+        }
+      )
+      .filter(
+        function(valeur) {
+
+          return Number.isFinite(
+            valeur
+          );
+        }
+      );
+
+
+  let distanceMin = 0;
+  let distanceMax = 3000;
+
+
+  if (toutesDistances.length > 0) {
+
+    distanceMin =
+      Math.floor(
+        (
+          Math.min(
+            ...toutesDistances
+          ) - 100
+        ) / 100
+      ) * 100;
+
+
+    distanceMax =
+      Math.ceil(
+        (
+          Math.max(
+            ...toutesDistances
+          ) + 100
+        ) / 100
+      ) * 100;
+  }
+
+
+  console.log(
+    "Echelle distance :",
+    distanceMin,
+    "→",
+    distanceMax
+  );
+
+
+
+      /*
+       * BARRES = DISTANCE
+       */
+      if (pointsDistance.length > 0) {
+
+        datasets.push({
+
+            cleCheval:
+             clePartant,
+
+          type:
+            "bar",
+
+          label:
+          (
+           partant.NuméroProgramme
+          ? partant.NuméroProgramme + " — "
+          : ""
+          ) +
+          partant.Cheval,
+          data:
+            pointsDistance,
+
+          yAxisID:
+            "yDistance",
+
+          backgroundColor:
+            couleurCheval,
+
+          borderColor:
+            couleurCheval,
+
+          borderWidth:
+            1,
+
+       /*
+ * Largeur de la barre sur l'axe temporel.
+ * Ici environ 4 jours.
+ */
+barThickness: 16,
+
+
+maxBarThickness:
+  18,
+
+borderRadius: 3,
+
+order:
+  2
+        });
+      }
+
+
+      /*
+       * LIGNE / POINTS = REDUCTION
+       */
+      if (pointsReduction.length > 0) {
+
+        datasets.push({
+
+  type:
+    "scatter",
+
+  cleCheval:
+    clePartant,
+
+  label:
+  (
+    numeroPartant
+      ? numeroPartant + " — "
+      : ""
+  ) +
+  partant.Cheval,
+
+  data:
+    pointsReduction,
+
+  yAxisID:
+    "yReduction",
+
+  backgroundColor:
+    couleurCheval,
+
+  borderColor:
+    "#ffffff",
+
+  pointBackgroundColor:
+    couleurCheval,
+
+  pointBorderColor:
+    "#ffffff",
+
+  pointBorderWidth:
+    2,
+
+pointRadius:
+  7,
+
+pointHoverRadius:
+  7,
+
+pointBorderWidth:
+  2,
+
+pointBorderColor:
+  "#ffffff",
+
+ 
+  order:
+    1
+});
+      }
+
+    }
+  );
+
+  const toutesReductions =
+  datasets
+    .filter(function(dataset) {
+      return dataset.yAxisID === "yReduction";
+    })
+    .flatMap(function(dataset) {
+      return dataset.data.map(function(point) {
+        return point.y;
+      });
+    })
+    .filter(function(valeur) {
+      return Number.isFinite(valeur);
+    });
+
+
+let reductionMin = null;
+let reductionMax = null;
+
+
+if (toutesReductions.length > 0) {
+
+  reductionMin =
+    Math.floor(
+      (
+        Math.min(...toutesReductions) -
+        0.3
+      ) * 10
+    ) / 10;
+
+
+  reductionMax
+    Math.ceil(
+      (
+        Math.max(...toutesReductions) +
+        0.3
+      ) * 10
+    ) / 10;
+}
+
+
+  graphiqueComparatif =
+    new Chart(
+      canvas.getContext("2d"),
+      {
+
+
+
+        data: {
+          datasets:
+            datasets
+        },
+
+          plugins: [
+        pluginLienDistanceReduction
+      ],
+
+
+        options: {
+
+          responsive:
+            true,
+
+          maintainAspectRatio:
+            false,
+
+
+          /*
+           * Pas d'infobulle.
+           */
+          interaction: {
+            mode:
+              "nearest",
+
+            intersect:
+              false
+          },
+
+
+          plugins: {
+
+
+            title: {
+
+              display:
+                true,
+
+              text:
+                "Comparaison Trot — 8 dernières courses",
+
+              color:
+                "#1f3045",
+
+              font: {
+                size:
+                  18,
+
+                weight:
+                  "bold"
+              },
+
+              padding: {
+                bottom:
+                  16
+              }
+            },
+
+
+            legend: {
+
+  display:
+    true,
+
+  position:
+    "top",
+
+  labels: {
+
+    usePointStyle:
+      true,
+
+    boxWidth:
+      12,
+
+    filter:
+      function(
+        legendItem,
+        chartData
+      ) {
+
+        const dataset =
+          chartData.datasets[
+            legendItem.datasetIndex
+          ];
+
+        /*
+         * On garde uniquement
+         * les datasets Réduction.
+         *
+         * Les barres Distance sont
+         * masquées dans la légende.
+         */
+        return (
+          dataset.yAxisID ===
+          "yReduction"
+        );
+      }
+  }
+},
+
+
+            tooltip: {
+              enabled:
+                false
+            },
+
+
+            /*
+             * Valeurs écrites
+             * directement sur le graphique.
+             */
+            datalabels: {
+
+  display:
+    function(context) {
+
+      return (
+        context.raw &&
+        context.raw.y !== null &&
+        context.raw.y !== undefined
+      );
+    },
+
+
+  formatter:
+    function(value, context) {
+
+      /*
+       * DISTANCE
+       */
+      if (
+  context.dataset.yAxisID ===
+  "yDistance"
+) {
+
+  let dateAffichee = "";
+
+  if (value.date) {
+
+    const date =
+      new Date(value.date);
+
+    if (!isNaN(date.getTime())) {
+
+      dateAffichee =
+        date.toLocaleDateString(
+          "fr-FR",
+          {
+            day: "2-digit",
+            month: "2-digit"
+          }
+        );
+    }
+  }
+
+
+  return [
+    Number(value.y)
+      .toLocaleString("fr-FR") +
+      " m",
+
+    dateAffichee
+  ];
+}
+
+
+      /*
+       * REDUCTION
+       */
+      if (
+        context.dataset.yAxisID ===
+        "yReduction"
+      ) {
+
+        return formaterReductionSecondes(
+          value.y
+        );
+      }
+
+
+      return "";
+    },
+
+
+  color:
+    "#1f3045",
+
+
+  font:
+    function(context) {
+
+      /*
+       * Distance un peu plus discrète
+       */
+      if (
+        context.dataset.yAxisID ===
+        "yDistance"
+      ) {
+
+        return {
+          size: 9,
+          weight: "bold"
+        };
+      }
+
+
+      /*
+       * Réduction légèrement plus visible
+       */
+      return {
+        size: 11,
+        weight: "bold"
+      };
+    },
+
+
+  /*
+   * POSITION VERTICALE
+   */
+  anchor:
+    function(context) {
+
+      if (
+        context.dataset.yAxisID ===
+        "yDistance"
+      ) {
+
+        /*
+         * Valeur vers le sommet
+         * de la barre
+         */
+        return "end";
+      }
+
+
+      /*
+       * Réduction centrée
+       * sur son point
+       */
+      return "center";
+    },
+
+
+  align:
+    function(context) {
+
+      if (
+        context.dataset.yAxisID ===
+        "yDistance"
+      ) {
+
+        /*
+         * Distance à l'intérieur
+         * de la barre
+         */
+        return "start";
+      }
+
+
+      /*
+       * Réduction au-dessus
+       * du point
+       */
+      return "top";
+    },
+
+
+  offset:
+    function(context) {
+
+      if (
+        context.dataset.yAxisID ===
+        "yDistance"
+      ) {
+
+        return 6;
+      }
+
+
+      return 7;
+    },
+
+
+  /*
+   * Evite que les labels
+   * sortent trop facilement
+   * du graphique.
+   */
+  clamp:
+    true
+},
+
+          },
+
+
+          scales: {
+
+
+            /*
+             * CHRONOLOGIE
+             */
+            x: {
+
+              type:
+                "linear",
+
+              position:
+                "bottom",
+
+              title: {
+
+                display:
+                  true,
+
+                text:
+                  "Chronologie"
+              },
+
+
+              ticks: {
+
+                maxTicksLimit:
+                  8,
+
+                callback:
+                  function(value) {
+
+                    const date =
+                      new Date(value);
+
+                    if (
+                      isNaN(
+                        date.getTime()
+                      )
+                    ) {
+                      return "";
+                    }
+
+                    return date
+                      .toLocaleDateString(
+                        "fr-FR",
+                        {
+                          day:
+                            "2-digit",
+
+                          month:
+                            "2-digit"
+                        }
+                      );
+                  }
+              }
+            },
+
+
+            /*
+             * AXE GAUCHE = DISTANCE
+             */
+            yDistance: {
+
+              type:
+                "linear",
+
+              position:
+                "left",
+
+              beginAtZero: false,
+
+              min:
+              1900,
+
+              max:
+              3100,
+
+              title: {
+
+                display:
+                  true,
+
+                text:
+                  "Distance (m)"
+              },
+
+
+              ticks: {
+
+                callback:
+                  function(value) {
+
+                    return (
+                      Number(value)
+                        .toLocaleString(
+                          "fr-FR"
+                        )
+                    );
+                  }
+              }
+            },
+
+
+            /*
+             * AXE DROIT = REDUCTION
+             *
+             * reverse = true :
+             * meilleur chrono plus haut.
+             */
+            yReduction: {
+
+  type: "linear",
+
+  position: "right",
+
+  reverse: false,
+
+  min: reductionMin,
+
+  max: reductionMax,
+
+  grid: {
+    drawOnChartArea: false
+  },
+
+  title: {
+    display: true,
+    text: "Réduction kilométrique"
+  },
+
+  ticks: {
+
+    stepSize: 0.5,
+
+    callback: function(value) {
+
+      return formaterReductionSecondes(
+        value
+      );
+    }
+  }
+}
+
+          }
+
+        }
+
+      }
+    );
+}
+
+function afficherGraphiqueComparatif(
+  lignesCourse
+) {
+
+ console.log(
+    "=== GRAPHIQUE COMPARATIF ==="
+  );
+
+  console.log(
+    "Nombre de lignes :",
+    lignesCourse
+      ? lignesCourse.length
+      : 0
+  );
+
+
+  const canvas =
+    document.getElementById(
+      "graphiqueComparatif"
+    );
+
+  console.log(
+    "Canvas comparatif :",
+    canvas
+  );
+
+
+  if (
+    !Array.isArray(lignesCourse) ||
+    lignesCourse.length === 0
+  ) {
+
+    console.warn(
+      "Aucune ligne pour le graphique comparatif."
+    );
+
+    return;
+  }
+
+
+  if (!canvas) {
+
+    console.warn(
+      "Canvas graphiqueComparatif introuvable."
+    );
+
+    return;
+  }
+
+
+  /*
+   * Discipline de la course
+   */
+  const discipline =
+    String(
+      lignesCourse[0].Discipline || ""
+    )
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      );
+
+
+  const estTrot =
+    discipline.includes("trot") ||
+    discipline.includes("attele") ||
+    discipline.includes("monte");
+
+
+  const estGalop =
+    discipline.includes("galop") ||
+    discipline.includes("plat") ||
+    discipline.includes("obstacle") ||
+    discipline.includes("haies") ||
+    discipline.includes("steeple");
+
+
+  /*
+   * Maximum 2 chevaux
+   */
+  const partants =
+    obtenirPartantsUniques(
+      lignesCourse
+    )
+      .slice(0, 2);
+
+
+  if (partants.length === 0) {
+    return;
+  }
+
+
+  /*
+   * Maximum 8 dernières courses
+   * par cheval
+   */
+  const lignesComparaison = [];
+
+
+  partants.forEach(
+    function(partant) {
+
+      const clePartant =
+        construireClePartant(
+          partant
+        );
+
+
+      const historique =
+        lignesCourse
+          .filter(
+            function(ligne) {
+
+              return (
+                construireClePartant(
+                  ligne
+                ) === clePartant &&
+                ligne.DateHistorique
+              );
+            }
+          )
+          .sort(
+            function(a, b) {
+
+              return (
+                convertirDateEnTimestamp(
+                  b.DateHistorique
+                ) -
+                convertirDateEnTimestamp(
+                  a.DateHistorique
+                )
+              );
+            }
+          )
+          .slice(0, 8);
+
+
+      historique.forEach(
+        function(ligne) {
+
+          lignesComparaison.push(
+            ligne
+          );
+        }
+      );
+    }
+  );
+
+;
+
+  const toutesDistances =
+  datasets
+    .filter(
+      function(dataset) {
+        return dataset.yAxisID === "yDistance";
+      }
+    )
+    .flatMap(
+      function(dataset) {
+        return dataset.data.map(
+          function(point) {
+            return point.y;
+          }
+        );
+      }
+    )
+    .filter(
+      function(valeur) {
+        return Number.isFinite(valeur);
+      }
+    );
+
+
+if (toutesDistances.length > 0) {
+
+  distanceMin =
+    Math.floor(
+      (
+        Math.min(...toutesDistances) -
+        100
+      ) / 100
+    ) * 100;
+
+
+  distanceMax =
+    Math.ceil(
+      (
+        Math.max(...toutesDistances) +
+        100
+      ) / 100
+    ) * 100;
+}
+
+
+  /*
+   * Remise dans l'ordre chronologique
+   */
+  lignesComparaison.sort(
+    function(a, b) {
+
+      return (
+        convertirDateEnTimestamp(
+          a.DateHistorique
+        ) -
+        convertirDateEnTimestamp(
+          b.DateHistorique
+        )
+      );
+    }
+  );
+
+
+  if (estTrot) {
+
+    afficherGraphiqueComparatifTrot(
+      canvas,
+      lignesComparaison,
+      partants
+    );
+
+    return;
+  }
+
+
+  if (estGalop) {
+
+    afficherGraphiqueComparatifGalop(
+      canvas,
+      lignesComparaison,
+      partants
+    );
+
+    return;
+  }
+
+
+  console.log(
+    "Graphique comparatif indisponible pour :",
+    discipline
+  );
+}
+
+function afficherGraphiqueComparatif(
+  lignesCourse
+) {
+
+  if (
+    !Array.isArray(lignesCourse) ||
+    lignesCourse.length === 0
+  ) {
+    return;
+  }
+
+  const canvas =
+    document.getElementById(
+      "graphiqueComparatif"
+    );
+
+  if (!canvas) {
+
+    console.warn(
+      "Canvas graphiqueComparatif introuvable."
+    );
+
+    return;
+  }
+
+
+  /*
+   * Discipline de la course
+   */
+  const discipline =
+    String(
+      lignesCourse[0].Discipline || ""
+    )
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      );
+
+
+  const estTrot =
+    discipline.includes("trot") ||
+    discipline.includes("attele") ||
+    discipline.includes("monte");
+
+
+  const estGalop =
+    discipline.includes("galop") ||
+    discipline.includes("plat") ||
+    discipline.includes("obstacle") ||
+    discipline.includes("haies") ||
+    discipline.includes("steeple");
+
+
+  /*
+   * Maximum 2 chevaux
+   */
+  const partants =
+    obtenirPartantsUniques(
+      lignesCourse
+    )
+      .slice(0, 2);
+
+
+  if (partants.length === 0) {
+    return;
+  }
+
+
+  /*
+   * Maximum 8 dernières courses
+   * par cheval
+   */
+  const lignesComparaison = [];
+
+
+  partants.forEach(
+    function(partant) {
+
+
+      const clePartant =
+        construireClePartant(
+          partant
+        );
+
+
+      const historique =
+        lignesCourse
+          .filter(
+            function(ligne) {
+
+              return (
+                construireClePartant(
+                  ligne
+                ) === clePartant &&
+                ligne.DateHistorique
+              );
+            }
+          )
+          .sort(
+            function(a, b) {
+
+              return (
+                convertirDateEnTimestamp(
+                  b.DateHistorique
+                ) -
+                convertirDateEnTimestamp(
+                  a.DateHistorique
+                )
+              );
+            }
+          )
+          .slice(0, 8);
+
+
+      historique.forEach(
+        function(ligne) {
+
+          lignesComparaison.push(
+            ligne
+          );
+        }
+      );
+    }
+  );
+
+
+  /*
+   * Remise dans l'ordre chronologique
+   */
+  lignesComparaison.sort(
+    function(a, b) {
+
+      return (
+        convertirDateEnTimestamp(
+          a.DateHistorique
+        ) -
+        convertirDateEnTimestamp(
+          b.DateHistorique
+        )
+      );
+    }
+  );
+
+
+  if (estTrot) {
+
+    afficherGraphiqueComparatifTrot(
+      canvas,
+      lignesComparaison,
+      partants
+    );
+
+    return;
+  }
+
+
+  if (estGalop) {
+
+    afficherGraphiqueComparatifGalop(
+      canvas,
+      lignesComparaison,
+      partants
+    );
+
+    return;
+  }
+
+
+  console.log(
+    "Graphique comparatif indisponible pour :",
+    discipline
+  );
+}
+
+function convertirReductionEnSecondes(
+  texte
+) {
+
+  if (!texte) {
+    return null;
+  }
+
+  const valeur =
+    String(texte)
+      .trim()
+      .replace(/’/g, "'");
+
+
+  /*
+   * Formats acceptés :
+   *
+   * 01'15''70
+   * 1'15''7
+   * 1'15"7
+   * 1'15"70
+   */
+  const match =
+    valeur.match(
+      /(\d+)'(\d{1,2})(?:''|["”])?(\d{1,2})?/
+    );
+
+
+  if (!match) {
+    return null;
+  }
+
+
+  const minutes =
+    Number(match[1]);
+
+  const secondes =
+    Number(match[2]);
+
+  /*
+   * 70 -> 0.70
+   * 7  -> 0.7
+   */
+  const fraction =
+    match[3]
+      ? Number(
+          "0." + match[3]
+        )
+      : 0;
+
+
+  return (
+    minutes * 60 +
+    secondes +
+    fraction
+  );
+}
+
+function formaterReductionSecondes(
+  secondes
+) {
+
+  if (
+    secondes === null ||
+    secondes === undefined ||
+    isNaN(secondes)
+  ) {
+    return "";
+  }
+
+
+  const minutes =
+    Math.floor(
+      secondes / 60
+    );
+
+
+  const reste =
+    secondes -
+    minutes * 60;
+
+
+  const sec =
+    Math.floor(
+      reste
+    );
+
+
+  let dixieme =
+    Math.round(
+      (reste - sec) * 10
+    );
+
+
+  /*
+   * Sécurité en cas d'arrondi à 10.
+   */
+  if (dixieme === 10) {
+
+    dixieme = 0;
+
+    return (
+      minutes +
+      "'" +
+      String(sec + 1)
+        .padStart(
+          2,
+          "0"
+        ) +
+      '"' +
+      dixieme
+    );
+  }
+
+
+  return (
+    minutes +
+    "'" +
+    String(sec)
+      .padStart(
+        2,
+        "0"
+      ) +
+    '"' +
+    dixieme
+  );
+}
+
+function afficherGraphiqueComparatifGalop(
+  canvas,
+  lignesComparaison,
+  partants
+) {
+
+  /*
+   * Nettoyage ancien graphique
+   */
+  if (graphiqueComparatif) {
+
+    graphiqueComparatif.destroy();
+
+    graphiqueComparatif = null;
+  }
+
+
+  const datasets = [];
+
+
+  /*
+   * =========================================
+   * CONSTRUCTION DES DATASETS PAR CHEVAL
+   * =========================================
+   */
+  partants.forEach(
+    function(partant, indexPartant) {
+
+      const clePartant =
+        construireClePartant(
+          partant
+        );
+
+
+      const numeroPartant =
+        partant.NuméroProgramme ||
+        partant.NumeroProgramme ||
+        partant["N°"] ||
+        "";
+
+
+      const couleurCheval =
+        obtenirCouleurCheval(
+          indexPartant,
+          partants.length
+        );
+
+
+      const pointsPoids = [];
+      const pointsGain = [];
+
+
+      lignesComparaison.forEach(
+        function(ligne) {
+
+          /*
+           * Seulement les lignes
+           * correspondant au cheval.
+           */
+          if (
+            construireClePartant(
+              ligne
+            ) !== clePartant
+          ) {
+            return;
+          }
+
+
+          /*
+           * Date
+           */
+          const timestamp =
+            convertirDateEnTimestamp(
+              ligne.DateHistorique
+            );
+
+
+          if (timestamp === null) {
+            return;
+          }
+
+
+          /*
+           * =================================
+           * POIDS
+           * =================================
+           */
+          const poids =
+            parseFloat(
+              String(
+                ligne.PoidsHistorique || ""
+              )
+                .replace(/[^\d.,-]/g, "")
+                .replace(",", ".")
+            );
+
+
+          /*
+           * =================================
+           * GAIN
+           * =================================
+           */
+          const gain =
+            Number(
+              obtenirGainHistorique(
+                ligne
+              )
+            );
+
+
+          /*
+           * Pour ce graphique,
+           * une performance n'est utilisée
+           * que si poids ET gain existent.
+           */
+          if (
+            isNaN(poids) ||
+            !Number.isFinite(gain)
+          ) {
+            return;
+          }
+
+
+          /*
+           * POIDS
+           */
+          pointsPoids.push({
+
+            x:
+              timestamp,
+
+            y:
+              poids,
+
+            cheval:
+              ligne.Cheval || "",
+
+            date:
+              ligne.DateHistorique || ""
+          });
+
+
+          /*
+           * GAIN
+           */
+          pointsGain.push({
+
+            x:
+              timestamp,
+
+            y:
+              gain,
+
+            cheval:
+              ligne.Cheval || "",
+
+            date:
+              ligne.DateHistorique || ""
+          });
+
+        }
+      );
+
+
+      /*
+       * =====================================
+       * BARRES = POIDS
+       * =====================================
+       */
+      if (pointsPoids.length > 0) {
+
+        datasets.push({
+
+          type:
+            "bar",
+
+          label:
+            partant.Cheval +
+            " — Poids",
+
+          cleCheval:
+            clePartant,
+
+          data:
+            pointsPoids,
+
+          yAxisID:
+            "yPoids",
+
+          backgroundColor:
+            couleurCheval,
+
+          borderColor:
+            couleurCheval,
+
+          borderWidth:
+            1,
+
+          borderRadius:
+            3,
+
+          barThickness:
+            16,
+
+          maxBarThickness:
+            18,
+
+          order:
+            2
+        });
+      }
+
+
+      /*
+       * =====================================
+       * POINTS = GAIN
+       * =====================================
+       */
+      if (pointsGain.length > 0) {
+
+        datasets.push({
+
+          type:
+            "scatter",
+
+          label:
+            (
+              numeroPartant
+                ? numeroPartant + " — "
+                : ""
+            ) +
+            partant.Cheval,
+
+          cleCheval:
+            clePartant,
+
+          data:
+            pointsGain,
+
+          yAxisID:
+            "yGain",
+
+          backgroundColor:
+            couleurCheval,
+
+          borderColor:
+            "#ffffff",
+
+          pointBackgroundColor:
+            couleurCheval,
+
+          pointBorderColor:
+            "#ffffff",
+
+          pointBorderWidth:
+            2,
+
+          pointRadius:
+            7,
+
+          pointHoverRadius:
+            7,
+
+          order:
+            1
+        });
+      }
+
+    }
+  );
+
+
+  /*
+   * Aucun élément exploitable.
+   */
+  if (datasets.length === 0) {
+
+    console.warn(
+      "Aucune donnée exploitable pour le graphique Galop."
+    );
+
+    return;
+  }
+
+
+  /*
+   * =========================================
+   * ECHELLE POIDS AUTOMATIQUE
+   * =========================================
+   */
+
+  const tousPoids =
+    datasets
+      .filter(
+        function(dataset) {
+
+          return (
+            dataset.yAxisID ===
+            "yPoids"
+          );
+        }
+      )
+      .flatMap(
+        function(dataset) {
+
+          return dataset.data.map(
+            function(point) {
+
+              return point.y;
+            }
+          );
+        }
+      )
+      .filter(
+        function(valeur) {
+
+          return Number.isFinite(
+            valeur
+          );
+        }
+      );
+
+
+  let poidsMin = null;
+  let poidsMax = null;
+
+
+  if (tousPoids.length > 0) {
+
+    poidsMin =
+      Math.floor(
+        (
+          Math.min(...tousPoids) -
+          1
+        ) * 2
+      ) / 2;
+
+
+    poidsMax =
+      Math.ceil(
+        (
+          Math.max(...tousPoids) +
+          1
+        ) * 2
+      ) / 2;
+  }
+
+
+  /*
+   * =========================================
+   * ECHELLE GAIN AUTOMATIQUE
+   * =========================================
+   */
+
+  const tousGains =
+    datasets
+      .filter(
+        function(dataset) {
+
+          return (
+            dataset.yAxisID ===
+            "yGain"
+          );
+        }
+      )
+      .flatMap(
+        function(dataset) {
+
+          return dataset.data.map(
+            function(point) {
+
+              return point.y;
+            }
+          );
+        }
+      )
+      .filter(
+        function(valeur) {
+
+          return Number.isFinite(
+            valeur
+          );
+        }
+      );
+
+
+  let gainMin = 0;
+  let gainMax = null;
+
+
+  if (tousGains.length > 0) {
+
+    const maximum =
+      Math.max(
+        ...tousGains
+      );
+
+
+    /*
+     * Petite marge supérieure.
+     */
+    gainMax =
+      maximum > 0
+        ? maximum * 1.10
+        : 1;
+  }
+
+
+  /*
+   * =========================================
+   * CREATION DU GRAPHIQUE
+   * =========================================
+   */
+
+  graphiqueComparatif =
+    new Chart(
+      canvas.getContext("2d"),
+      {
+
+        data: {
+
+          datasets:
+            datasets
+        },
+
+
+        options: {
+
+          responsive:
+            true,
+
+          maintainAspectRatio:
+            false,
+
+
+          interaction: {
+
+            mode:
+              "nearest",
+
+            intersect:
+              false
+          },
+
+
+          plugins: {
+
+
+            /*
+             * TITRE
+             */
+            title: {
+
+              display:
+                true,
+
+              text:
+                "Comparaison Galop — 8 dernières courses",
+
+              color:
+                "#1f3045",
+
+              font: {
+
+                size:
+                  18,
+
+                weight:
+                  "bold"
+              },
+
+              padding: {
+
+                bottom:
+                  16
+              }
+            },
+
+
+            /*
+             * LEGENDE
+             *
+             * On affiche uniquement
+             * le dataset Gain :
+             * une seule entrée par cheval.
+             */
+            legend: {
+
+              display:
+                true,
+
+              position:
+                "top",
+
+              labels: {
+
+                usePointStyle:
+                  true,
+
+                boxWidth:
+                  12,
+
+                filter:
+                  function(
+                    legendItem,
+                    chartData
+                  ) {
+
+                    const dataset =
+                      chartData.datasets[
+                        legendItem.datasetIndex
+                      ];
+
+
+                    return (
+                      dataset.yAxisID ===
+                      "yGain"
+                    );
+                  }
+              }
+            },
+
+
+            /*
+             * Pas d'infobulle
+             */
+            tooltip: {
+
+              enabled:
+                false
+            },
+
+
+            /*
+             * VALEURS DIRECTEMENT
+             * SUR LE GRAPHIQUE
+             */
+            datalabels: {
+
+              display:
+                function(context) {
+
+                  return (
+                    context.raw &&
+                    context.raw.y !== null &&
+                    context.raw.y !== undefined
+                  );
+                },
+
+
+              formatter:
+                function(
+                  value,
+                  context
+                ) {
+
+
+                  /*
+                   * POIDS
+                   */
+                  if (
+                    context.dataset.yAxisID ===
+                    "yPoids"
+                  ) {
+
+                    return (
+                      String(
+                        Number(value.y)
+                      )
+                        .replace(
+                          ".",
+                          ","
+                        ) +
+                      " kg"
+                    );
+                  }
+
+
+                  /*
+                   * GAIN
+                   */
+                  if (
+                    context.dataset.yAxisID ===
+                    "yGain"
+                  ) {
+
+                    return (
+                      Number(value.y)
+                        .toLocaleString(
+                          "fr-FR"
+                        ) +
+                      " €"
+                    );
+                  }
+
+
+                  return "";
+                },
+
+
+              color:
+                "#1f3045",
+
+
+              font:
+                function(context) {
+
+                  if (
+                    context.dataset.yAxisID ===
+                    "yPoids"
+                  ) {
+
+                    return {
+
+                      size:
+                        9,
+
+                      weight:
+                        "bold"
+                    };
+                  }
+
+
+                  return {
+
+                    size:
+                      10,
+
+                    weight:
+                      "bold"
+                  };
+                },
+
+
+              anchor:
+                function(context) {
+
+                  if (
+                    context.dataset.yAxisID ===
+                    "yPoids"
+                  ) {
+
+                    return "end";
+                  }
+
+
+                  return "center";
+                },
+
+
+              align:
+                function(context) {
+
+                  if (
+                    context.dataset.yAxisID ===
+                    "yPoids"
+                  ) {
+
+                    return "start";
+                  }
+
+
+                  return "top";
+                },
+
+
+              offset:
+                function(context) {
+
+                  if (
+                    context.dataset.yAxisID ===
+                    "yPoids"
+                  ) {
+
+                    return 6;
+                  }
+
+
+                  return 7;
+                },
+
+
+              clamp:
+                true
+            }
+
+          },
+
+
+          /*
+           * =================================
+           * AXES
+           * =================================
+           */
+          scales: {
+
+
+            /*
+             * CHRONOLOGIE
+             */
+            x: {
+
+              type:
+                "linear",
+
+              position:
+                "bottom",
+
+              title: {
+
+                display:
+                  true,
+
+                text:
+                  "Chronologie"
+              },
+
+
+              ticks: {
+
+                maxTicksLimit:
+                  8,
+
+                callback:
+                  function(value) {
+
+                    const date =
+                      new Date(
+                        value
+                      );
+
+
+                    if (
+                      isNaN(
+                        date.getTime()
+                      )
+                    ) {
+
+                      return "";
+                    }
+
+
+                    return date
+                      .toLocaleDateString(
+                        "fr-FR",
+                        {
+
+                          day:
+                            "2-digit",
+
+                          month:
+                            "2-digit"
+                        }
+                      );
+                  }
+              }
+            },
+
+
+            /*
+             * AXE GAUCHE = POIDS
+             */
+            yPoids: {
+
+              type:
+                "linear",
+
+              position:
+                "left",
+
+              beginAtZero:
+                false,
+
+              min:
+                poidsMin,
+
+              max:
+                poidsMax,
+
+              title: {
+
+                display:
+                  true,
+
+                text:
+                  "Poids (kg)"
+              },
+
+
+              ticks: {
+
+                stepSize:
+                  1,
+
+                callback:
+                  function(value) {
+
+                    return (
+                      String(value)
+                        .replace(
+                          ".",
+                          ","
+                        ) +
+                      " kg"
+                    );
+                  }
+              }
+            },
+
+
+            /*
+             * AXE DROIT = GAIN
+             */
+            yGain: {
+
+              type:
+                "linear",
+
+              position:
+                "right",
+
+              beginAtZero:
+                true,
+
+              min:
+                gainMin,
+
+              max:
+                gainMax,
+
+              grid: {
+
+                drawOnChartArea:
+                  false
+              },
+
+
+              title: {
+
+                display:
+                  true,
+
+                text:
+                  "Gain (€)"
+              },
+
+
+              ticks: {
+
+                callback:
+                  function(value) {
+
+                    return (
+                      Number(value)
+                        .toLocaleString(
+                          "fr-FR"
+                        ) +
+                      " €"
+                    );
+                  }
+              }
+            }
+
+          }
+
+        }
+
+      }
+    );
 }

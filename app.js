@@ -2220,14 +2220,32 @@ function rafraichirGraphiquesSelection(
   lignesCourse
 ) {
 
+  console.log(
+  "ENTREE afficherTableauSyntheseCourse"
+);
+
   const lignesFiltrees =
     filtrerLignesParSelection(
       lignesCourse
     );
 
+ 
   afficherGraphiqueGains(
-    lignesFiltrees
+    lignesCourse
   );
+
+  console.log(
+  "AVANT TABLEAU SYNTHESE",
+  lignesCourse.length
+);
+
+  afficherTableauSyntheseCourse(
+  lignesCourse
+);
+
+console.log(
+  "APRES TABLEAU SYNTHESE"
+);
 
   afficherGraphiqueEvolution(
     lignesFiltrees
@@ -2873,9 +2891,16 @@ function mettreAJourGraphiquesSelection() {
     lignesFiltrees
   );
 
+afficherTableauSyntheseCourse(
+  lignesFiltrees
+);
+
   afficherGraphiqueEvolution(
     lignesFiltrees
   );
+
+
+
 }
 
 const pluginLienDistanceReduction = {
@@ -5289,4 +5314,354 @@ function afficherGraphiqueComparatifGalop(
 
       }
     );
+}
+
+function afficherTableauSyntheseCourse(
+  lignesCourse
+) {
+
+  const conteneur =
+    document.getElementById(
+      "tableauSyntheseCourse"
+    );
+
+  if (!conteneur) {
+    return;
+  }
+
+  if (
+    !Array.isArray(lignesCourse) ||
+    lignesCourse.length === 0
+  ) {
+    conteneur.innerHTML = "";
+    return;
+  }
+
+
+  const partantsSynthese =
+    obtenirPartantsUniques(
+      lignesCourse
+    );
+
+
+  console.log(
+    "Partants synthèse :",
+    partantsSynthese
+  );
+
+
+  const statistiques = [];
+
+
+  partantsSynthese.forEach(
+    function(partant) {
+
+      // suite du calcul...
+    
+
+      const clePartant =
+        construireClePartant(
+          partant
+        );
+
+
+      const lignesCheval =
+        lignesCourse.filter(
+          function(ligne) {
+
+            return (
+              construireClePartant(
+                ligne
+              ) === clePartant
+            );
+          }
+        );
+
+
+      /*
+       * On ne conserve que les
+       * performances avec une date.
+       */
+      const historique =
+        lignesCheval
+          .filter(
+            function(ligne) {
+
+              return !!ligne.DateHistorique;
+            }
+          )
+          .sort(
+            function(a, b) {
+
+              return (
+                convertirDateEnTimestamp(
+                  b.DateHistorique
+                ) -
+                convertirDateEnTimestamp(
+                  a.DateHistorique
+                )
+              );
+            }
+          );
+
+
+      let courses = 0;
+      let victoires = 0;
+      let top3 = 0;
+      let gains = 0;
+
+
+      historique.forEach(
+        function(ligne) {
+
+          const place =
+            extrairePlaceNumerique(
+              ligne.Place
+            );
+
+
+          /*
+           * Une ligne historique
+           * exploitable = une course.
+           */
+          courses++;
+
+
+          if (place === 1) {
+            victoires++;
+          }
+
+
+          if (
+            place !== null &&
+            place >= 1 &&
+            place <= 3
+          ) {
+            top3++;
+          }
+
+
+          const gain =
+            Number(
+              obtenirGainHistorique(
+                ligne
+              )
+            );
+
+
+          if (
+            Number.isFinite(gain)
+          ) {
+            gains += gain;
+          }
+        }
+      );
+
+
+      /*
+       * Musique :
+       * 5 dernières performances.
+       */
+      const musique =
+        historique
+          .slice(0, 5)
+          .map(
+            function(ligne) {
+
+              const place =
+                extrairePlaceNumerique(
+                  ligne.Place
+                );
+
+
+              if (
+                place !== null &&
+                place > 0
+              ) {
+                return String(place);
+              }
+
+
+              const statut =
+                String(
+                  ligne.StatutHistorique ||
+                  ""
+                )
+                  .trim()
+                  .toUpperCase();
+
+
+              if (
+                statut.includes(
+                  "DISQUAL"
+                ) ||
+                statut === "DAI"
+              ) {
+                return "D";
+              }
+
+
+              return "0";
+            }
+          )
+          .join(" ");
+
+
+      const pourcentageTop3 =
+        courses > 0
+          ? (
+              top3 /
+              courses *
+              100
+            )
+          : 0;
+
+      const gainMoyen =
+      courses > 0
+    ? gains / courses
+    : 0;    
+
+
+      statistiques.push({
+
+        numero:
+          partant.NuméroProgramme ||
+          partant.NumeroProgramme ||
+          "",
+
+        cheval:
+          partant.Cheval || "",
+
+        musique:
+          musique,
+
+        courses:
+          courses,
+
+        victoires:
+          victoires,
+
+        top3:
+          top3,
+
+        pourcentageTop3:
+          pourcentageTop3,
+
+        gains:
+          gains,
+
+        gainMoyen:
+        gainMoyen
+      });
+
+    }
+  );
+
+
+  /*
+   * Construction HTML
+   */
+  let html = `
+
+    <div class="tableau-synthese-course">
+
+      <h3>
+        Synthèse des partants
+      </h3>
+
+      <div class="tableau-synthese-scroll">
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>N°</th>
+              <th>Cheval</th>
+              <th>Musique (5)</th>
+              <th>Courses</th>
+              <th>Victoires</th>
+              <th>Top 3</th>
+              <th>% Top 3</th>
+              <th>Gains</th>
+              <th>Gain moyen</th>
+            </tr>
+
+          </thead>
+
+          <tbody>
+  `;
+
+
+  statistiques.forEach(
+    function(stat) {
+
+      html += `
+
+        <tr>
+
+          <td>
+            ${stat.numero}
+          </td>
+
+          <td class="nom-cheval">
+            ${stat.cheval}
+          </td>
+
+          <td>
+            ${stat.musique}
+          </td>
+
+          <td>
+            ${stat.courses}
+          </td>
+
+          <td>
+            ${stat.victoires}
+          </td>
+
+          <td>
+            ${stat.top3}
+          </td>
+
+          <td>
+            ${stat.pourcentageTop3
+              .toFixed(0)} %
+          </td>
+
+          <td>
+            ${stat.gains
+              .toLocaleString(
+                "fr-FR"
+              )} €
+          </td>
+
+          <td>
+        ${Math.round(
+        stat.gainMoyen
+        ).toLocaleString(
+         "fr-FR"
+        )} €
+</td>
+
+        </tr>
+      `;
+    }
+  );
+
+
+  html += `
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+  `;
+
+
+  conteneur.innerHTML =
+    html;
 }

@@ -825,3 +825,62 @@ select { width: 100%; padding: 10px 12px; border: 1px solid #cbd3dc; border-radi
   color: #64748b;
   text-align: center;
 }
+
+.tableau-synthese-course {
+  margin-top: 20px;
+}
+
+.tableau-synthese-course h3 {
+  margin-bottom: 10px;
+  color: #1f3045;
+}
+
+.tableau-synthese-scroll {
+  overflow-x: auto;
+}
+
+#tableauSyntheseCourse {
+  width: 100%;
+  max-width: none;
+}
+
+.tableau-synthese-course {
+  width: fit-content;
+  max-width: 100%;
+  margin: 20px auto;
+}
+
+.tableau-synthese-scroll {
+  width: auto;
+}
+
+.tableau-synthese-course table {
+  width: auto;
+  margin: 0 auto;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tableau-synthese-course h3 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #1f3045;
+}
+
+.tableau-synthese-course th,
+.tableau-synthese-course td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tableau-synthese-course th {
+  background: #f8fafc;
+  font-weight: 700;
+}
+
+.tableau-synthese-course .nom-cheval {
+  text-align: left;
+  font-weight: 600;
+}

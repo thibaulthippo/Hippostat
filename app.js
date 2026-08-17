@@ -2224,11 +2224,52 @@ function rafraichirGraphiquesSelection(
   "ENTREE afficherTableauSyntheseCourse"
 );
 
-  const lignesFiltrees =
-    filtrerLignesParSelection(
-      lignesCourse
+
+
+ let lignesFiltrees =
+  filtrerLignesParSelection(
+    lignesCourse
+  );
+
+
+const caseConfrontations =
+  document.getElementById(
+    "filtreConfrontationsDirectes"
+  );
+
+
+if (
+  caseConfrontations &&
+  caseConfrontations.checked
+) {
+
+console.log(
+  "AVANT confrontation :",
+  lignesFiltrees.length
+);
+
+const caseConfrontations =
+  document.getElementById(
+    "filtreConfrontationsDirectes"
+  );
+
+if (
+  caseConfrontations &&
+  caseConfrontations.checked
+) {
+  
+  lignesFiltrees =
+    filtrerConfrontationsDirectes(
+      lignesFiltrees
     );
 
+  console.log(
+    "APRES confrontation :",
+    lignesFiltrees.length
+  );
+}
+
+}
  
   afficherGraphiqueGains(
     lignesCourse
@@ -2880,27 +2921,70 @@ function obtenirLignesChevauxSelectionnes() {
 
 function mettreAJourGraphiquesSelection() {
 
-  const lignesFiltrees =
+  /*
+   * Données correspondant aux
+   * chevaux actuellement sélectionnés.
+   */
+  let lignesFiltrees =
     obtenirLignesChevauxSelectionnes();
 
+
   /*
-   * Utilisez ici les noms exacts de vos
-   * fonctions actuelles.
+   * Filtre :
+   * confrontations directes
+   */
+  const caseConfrontations =
+    document.getElementById(
+      "filtreConfrontationsDirectes"
+    );
+
+
+  console.log(
+    "AVANT confrontation :",
+    lignesFiltrees.length
+  );
+
+
+  if (
+    caseConfrontations &&
+    caseConfrontations.checked
+  ) {
+
+    lignesFiltrees =
+      filtrerConfrontationsDirectes(
+        lignesFiltrees
+      );
+
+
+    console.log(
+      "APRES confrontation :",
+      lignesFiltrees.length
+    );
+  }
+
+
+  /*
+   * Graphique des gains
    */
   afficherGraphiqueGains(
     lignesFiltrees
   );
 
-afficherTableauSyntheseCourse(
-  lignesFiltrees
-);
 
-  afficherGraphiqueEvolution(
+  /*
+   * Tableau de synthèse
+   */
+  afficherTableauSyntheseCourse(
     lignesFiltrees
   );
 
 
-
+  /*
+   * Evolution des performances
+   */
+  afficherGraphiqueEvolution(
+    lignesFiltrees
+  );
 }
 
 const pluginLienDistanceReduction = {
@@ -5462,49 +5546,19 @@ function afficherTableauSyntheseCourse(
        * Musique :
        * 5 dernières performances.
        */
-      const musique =
-        historique
-          .slice(0, 5)
-          .map(
-            function(ligne) {
+     const musique =
+  historique
+    .slice(0, 5)
+    .map(
+      function(ligne) {
 
-              const place =
-                extrairePlaceNumerique(
-                  ligne.Place
-                );
-
-
-              if (
-                place !== null &&
-                place > 0
-              ) {
-                return String(place);
-              }
-
-
-              const statut =
-                String(
-                  ligne.StatutHistorique ||
-                  ""
-                )
-                  .trim()
-                  .toUpperCase();
-
-
-              if (
-                statut.includes(
-                  "DISQUAL"
-                ) ||
-                statut === "DAI"
-              ) {
-                return "D";
-              }
-
-
-              return "0";
-            }
-          )
-          .join(" ");
+        return formaterMusiqueHistorique(
+          ligne
+        );
+      }
+    )
+    .filter(Boolean)
+    .join(" ");
 
 
       const pourcentageTop3 =
@@ -5665,3 +5719,625 @@ function afficherTableauSyntheseCourse(
   conteneur.innerHTML =
     html;
 }
+
+function formaterMusiqueHistorique(
+  ligne
+) {
+
+  if (!ligne) {
+    return "";
+  }
+
+
+  /*
+   * ============================
+   * DISCIPLINE
+   * ============================
+   */
+  const discipline =
+    String(
+      ligne.DisciplineHistorique ||
+      ligne.Discipline ||
+      ""
+    )
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      );
+
+
+  let suffixe = "";
+
+
+  /*
+   * TROT
+   */
+  if (
+    discipline.includes("attele")
+  ) {
+
+    suffixe = "a";
+
+  } else if (
+    discipline.includes("monte")
+  ) {
+
+    suffixe = "m";
+
+
+  /*
+   * GALOP
+   */
+  } else if (
+    discipline.includes("plat")
+  ) {
+
+    suffixe = "p";
+
+  } else if (
+    discipline.includes("haie")
+  ) {
+
+    suffixe = "h";
+
+  } else if (
+    discipline.includes("steeple")
+  ) {
+
+    suffixe = "s";
+  }
+
+
+  /*
+   * ============================
+   * STATUT
+   * ============================
+   */
+  const statut =
+    String(
+      ligne.StatutHistorique ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  /*
+   * TOMBÉ
+   *
+   * Th = tombé en haies
+   * Ts = tombé en steeple
+   */
+  if (
+    statut.includes("TOMBE")
+  ) {
+
+    return (
+      "T" +
+      suffixe
+    );
+  }
+
+
+  /*
+   * DISQUALIFIÉ
+   *
+   * Da = attelé
+   * Dm = monté
+   */
+  if (
+    statut.includes("DISQUAL") ||
+    statut === "DAI"
+  ) {
+
+    return (
+      "D" +
+      suffixe
+    );
+  }
+
+
+  /*
+   * ============================
+   * PLACE
+   * ============================
+   */
+  const place =
+    extrairePlaceNumerique(
+      ligne.Place
+    );
+
+
+  /*
+   * Performance classée
+   */
+  if (
+    place !== null &&
+    place > 0
+  ) {
+
+    return (
+      place +
+      suffixe
+    );
+  }
+
+
+  /*
+   * Non classé
+   */
+  return (
+    "0" +
+    suffixe
+  );
+}
+
+
+function detecterConfrontationsDirectes(
+  lignesCourse
+) {
+
+  console.log(
+    "======================================"
+  );
+
+  console.log(
+    "DETECTION CONFRONTATIONS DIRECTES"
+  );
+
+  console.log(
+    "======================================"
+  );
+
+
+  if (
+    !Array.isArray(lignesCourse) ||
+    lignesCourse.length === 0
+  ) {
+
+    console.log(
+      "Aucune donnée."
+    );
+
+    return [];
+  }
+
+
+  /*
+   * =====================================
+   * CLE CHEVAL
+   *
+   * Pour le premier test :
+   * uniquement le nom normalisé.
+   *
+   * Plus tard :
+   * nom + pays + discipline générale.
+   * =====================================
+   */
+  function cleCheval(ligne) {
+
+    return String(
+      ligne.Cheval || ""
+    )
+      .trim()
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      );
+  }
+
+
+  /*
+   * =====================================
+   * CHEVAUX DE LA COURSE ACTUELLE
+   * =====================================
+   */
+  const partantsActuels =
+    obtenirPartantsUniques(
+      lignesCourse
+    );
+
+
+  const chevauxActuels =
+    new Set();
+
+
+  partantsActuels.forEach(
+    function(partant) {
+
+      const cle =
+        cleCheval(
+          partant
+        );
+
+      if (cle) {
+
+        chevauxActuels.add(
+          cle
+        );
+      }
+    }
+  );
+
+
+  console.log(
+    "Nombre de partants actuels :",
+    chevauxActuels.size
+  );
+
+
+  /*
+   * =====================================
+   * REGROUPEMENT PAR COURSE HISTORIQUE
+   * =====================================
+   */
+  const coursesHistoriques =
+    new Map();
+
+
+  lignesCourse.forEach(
+    function(ligne) {
+
+      const courseID =
+        String(
+          ligne.CourseIDHistorique ||
+          ""
+        ).trim();
+
+
+      if (!courseID) {
+        return;
+      }
+
+
+      const cle =
+        cleCheval(
+          ligne
+        );
+
+
+      /*
+       * On ne s'intéresse qu'aux
+       * chevaux présents aujourd'hui.
+       */
+      if (
+        !chevauxActuels.has(
+          cle
+        )
+      ) {
+        return;
+      }
+
+
+      if (
+        !coursesHistoriques.has(
+          courseID
+        )
+      ) {
+
+        coursesHistoriques.set(
+          courseID,
+          []
+        );
+      }
+
+
+      coursesHistoriques
+        .get(courseID)
+        .push(
+          ligne
+        );
+    }
+  );
+
+
+  /*
+   * =====================================
+   * RECHERCHE DES COURSES COMMUNES
+   * =====================================
+   */
+  const confrontations = [];
+
+
+  coursesHistoriques.forEach(
+    function(
+      lignes,
+      courseID
+    ) {
+
+      /*
+       * Plusieurs lignes du même cheval
+       * ne doivent pas compter plusieurs fois.
+       */
+      const chevauxPresents =
+        new Set();
+
+
+      lignes.forEach(
+        function(ligne) {
+
+          chevauxPresents.add(
+            cleCheval(
+              ligne
+            )
+          );
+        }
+      );
+
+
+      /*
+       * Il faut au minimum
+       * deux chevaux différents.
+       */
+      if (
+        chevauxPresents.size < 2
+      ) {
+        return;
+      }
+
+
+      confrontations.push({
+
+        courseID:
+          courseID,
+
+        lignes:
+          lignes
+
+      });
+
+
+      /*
+       * =================================
+       * AFFICHAGE CONSOLE
+       * =================================
+       */
+
+      console.log(
+        "--------------------------------------"
+      );
+
+      console.log(
+        "COURSE COMMUNE :",
+        courseID
+      );
+
+
+      lignes.forEach(
+        function(ligne) {
+
+          console.log(
+            "→",
+            ligne.Cheval,
+            "| Place :",
+            ligne.Place,
+            "| Date :",
+            ligne.DateHistorique
+          );
+        }
+      );
+
+    }
+  );
+
+
+  console.log(
+    "======================================"
+  );
+
+  console.log(
+    "Nombre de courses avec confrontation :",
+    confrontations.length
+  );
+
+  console.log(
+    "======================================"
+  );
+
+
+  return confrontations;
+}
+
+function filtrerConfrontationsDirectes(
+  lignesCourse
+) {
+
+  if (
+    !Array.isArray(lignesCourse) ||
+    lignesCourse.length === 0
+  ) {
+    return [];
+  }
+
+
+  function cleCheval(ligne) {
+
+    return String(
+      ligne.Cheval || ""
+    )
+      .trim()
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      );
+  }
+
+
+  const partantsActuels =
+    obtenirPartantsUniques(
+      lignesCourse
+    );
+
+
+  const chevauxActuels =
+    new Set(
+      partantsActuels
+        .map(
+          function(partant) {
+
+            return cleCheval(
+              partant
+            );
+          }
+        )
+        .filter(Boolean)
+    );
+
+
+  const coursesHistoriques =
+    new Map();
+
+
+  lignesCourse.forEach(
+    function(ligne) {
+
+      const courseID =
+        String(
+          ligne.CourseIDHistorique || ""
+        ).trim();
+
+
+      if (!courseID) {
+        return;
+      }
+
+
+      const cle =
+        cleCheval(
+          ligne
+        );
+
+
+      if (
+        !chevauxActuels.has(
+          cle
+        )
+      ) {
+        return;
+      }
+
+
+      if (
+        !coursesHistoriques.has(
+          courseID
+        )
+      ) {
+
+        coursesHistoriques.set(
+          courseID,
+          []
+        );
+      }
+
+
+      coursesHistoriques
+        .get(courseID)
+        .push(
+          ligne
+        );
+    }
+  );
+
+
+  const coursesCommunes =
+    new Set();
+
+
+  coursesHistoriques.forEach(
+    function(
+      lignes,
+      courseID
+    ) {
+
+      const chevauxPresents =
+        new Set(
+          lignes
+            .map(
+              function(ligne) {
+
+                return cleCheval(
+                  ligne
+                );
+              }
+            )
+            .filter(Boolean)
+        );
+
+
+      if (
+        chevauxPresents.size >= 2
+      ) {
+
+        coursesCommunes.add(
+          courseID
+        );
+      }
+    }
+  );
+
+
+  return lignesCourse.filter(
+    function(ligne) {
+
+      const courseID =
+        String(
+          ligne.CourseIDHistorique || ""
+        ).trim();
+
+
+      return (
+        courseID &&
+        coursesCommunes.has(
+          courseID
+        )
+      );
+    }
+  );
+}
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function() {
+
+    const caseConfrontations =
+      document.getElementById(
+        "filtreConfrontationsDirectes"
+      );
+
+    if (!caseConfrontations) {
+
+      console.warn(
+        "Case filtreConfrontationsDirectes introuvable"
+      );
+
+      return;
+    }
+
+
+    console.log(
+      "Filtre confrontations initialisé"
+    );
+
+
+    caseConfrontations.addEventListener(
+      "change",
+      function() {
+
+        console.log(
+          "Case confrontations modifiée :",
+          caseConfrontations.checked
+        );
+
+        mettreAJourGraphiquesSelection();
+      }
+    );
+
+  }
+);

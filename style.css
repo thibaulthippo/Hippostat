@@ -884,3 +884,49 @@ select { width: 100%; padding: 10px 12px; border: 1px solid #cbd3dc; border-radi
   text-align: left;
   font-weight: 600;
 }
+
+.filtre-avance {
+  margin: 12px 0 18px;
+  padding: 10px 14px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+
+.filtre-confrontations {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  cursor: pointer;
+}
+
+
+.filtre-confrontations input {
+  width: 16px;
+  height: 16px;
+
+  cursor: pointer;
+}
+
+
+.filtre-confrontations-titre {
+  font-size: 14px;
+  font-weight: 700;
+
+  color: #1f3045;
+}
+
+
+.filtre-confrontations-description {
+  margin-top: 5px;
+  margin-left: 24px;
+
+  font-size: 12px;
+  line-height: 1.4;
+
+  color: #64748b;
+}

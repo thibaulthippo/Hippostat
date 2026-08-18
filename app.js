@@ -2904,6 +2904,9 @@ function gererChangementSelectionCheval(
 }
 function obtenirLignesChevauxSelectionnes() {
 
+
+
+
   return lignesCourseCourante.filter(
     function(ligne) {
 
@@ -2912,9 +2915,25 @@ function obtenirLignesChevauxSelectionnes() {
           ligne.Cheval
         );
 
-      return chevauxSelectionnes.has(
-        cleCheval
-      );
+      if (
+        chevauxSelectionnes.has(
+          cleCheval
+        )
+      ) {
+
+        console.log(
+          "TEST NUMERO :",
+          ligne.Cheval,
+          "Numero =", ligne.Numero,
+          "Num =", ligne.Num,
+          "N° =", ligne["N°"],
+          "NumeroPartant =", ligne.NumeroPartant
+        );
+
+        return true;
+      }
+
+      return false;
     }
   );
 }
@@ -2930,8 +2949,44 @@ function mettreAJourGraphiquesSelection() {
 
 
   /*
-   * Filtre :
-   * confrontations directes
+   * ==========================================
+   * FILTRE : 3 DERNIERS MOIS
+   * ==========================================
+   */
+  const case3Mois =
+    document.getElementById(
+      "filtre3Mois"
+    );
+
+
+  if (
+    case3Mois &&
+    case3Mois.checked
+  ) {
+
+    console.log(
+      "AVANT filtre 3 mois :",
+      lignesFiltrees.length
+    );
+
+
+    lignesFiltrees =
+      filtrerTroisDerniersMois(
+        lignesFiltrees
+      );
+
+
+    console.log(
+      "APRES filtre 3 mois :",
+      lignesFiltrees.length
+    );
+  }
+
+
+  /*
+   * ==========================================
+   * FILTRE : CONFRONTATIONS DIRECTES
+   * ==========================================
    */
   const caseConfrontations =
     document.getElementById(
@@ -2939,16 +2994,16 @@ function mettreAJourGraphiquesSelection() {
     );
 
 
-  console.log(
-    "AVANT confrontation :",
-    lignesFiltrees.length
-  );
-
-
   if (
     caseConfrontations &&
     caseConfrontations.checked
   ) {
+
+    console.log(
+      "AVANT confrontation :",
+      lignesFiltrees.length
+    );
+
 
     lignesFiltrees =
       filtrerConfrontationsDirectes(
@@ -2964,28 +3019,32 @@ function mettreAJourGraphiquesSelection() {
 
 
   /*
-   * Graphique des gains
+   * ==========================================
+   * AFFICHAGES
+   * ==========================================
    */
+
   afficherGraphiqueGains(
     lignesFiltrees
   );
 
 
-  /*
-   * Tableau de synthèse
-   */
   afficherTableauSyntheseCourse(
     lignesFiltrees
   );
 
 
-  /*
-   * Evolution des performances
-   */
   afficherGraphiqueEvolution(
     lignesFiltrees
   );
+
+
+  afficherTableauConfrontationsDirectes(
+    lignesFiltrees
+  );
+
 }
+
 
 const pluginLienDistanceReduction = {
 
@@ -6338,6 +6397,597 @@ document.addEventListener(
         mettreAJourGraphiquesSelection();
       }
     );
+/*
+ * ==========================================
+ * FILTRE 3 DERNIERS MOIS
+ * ==========================================
+ */
 
+const case3Mois =
+  document.getElementById(
+    "filtre3Mois"
+  );
+
+
+if (case3Mois) {
+
+  case3Mois.addEventListener(
+    "change",
+    function() {
+
+      console.log(
+        "Filtre 3 mois modifié :",
+        case3Mois.checked
+      );
+
+      mettreAJourGraphiquesSelection();
+
+    }
+  );
+}
   }
+
+
+
+  
 );
+
+function afficherTableauConfrontationsDirectes(
+  lignes
+) {
+
+  const zone =
+    document.getElementById(
+      "zoneConfrontationsDirectes"
+    );
+
+  const corps =
+    document.getElementById(
+      "corpsTableauConfrontations"
+    );
+
+  const caseConfrontations =
+    document.getElementById(
+      "filtreConfrontationsDirectes"
+    );
+
+  const numerosActuels =
+  construireMapNumeroPartantActuel();
+
+
+  if (
+    !zone ||
+    !corps
+  ) {
+    return;
+  }
+
+
+  /*
+   * Filtre désactivé :
+   * on masque complètement le tableau.
+   */
+  if (
+    !caseConfrontations ||
+    !caseConfrontations.checked
+  ) {
+
+    zone.style.display = "none";
+    corps.innerHTML = "";
+
+    return;
+  }
+
+
+  if (
+    !Array.isArray(lignes) ||
+    lignes.length === 0
+  ) {
+
+    zone.style.display = "block";
+
+    corps.innerHTML = `
+      <tr>
+        <td colspan="4" class="aucune-confrontation">
+          Aucune confrontation directe trouvée.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+
+  /*
+   * ==========================================
+   * REGROUPEMENT PAR COURSE HISTORIQUE
+   * ==========================================
+   */
+
+  const courses =
+    new Map();
+
+
+  lignes.forEach(
+    function(ligne) {
+
+      const courseID =
+        String(
+          ligne.CourseIDHistorique || ""
+        ).trim();
+
+
+      if (!courseID) {
+        return;
+      }
+
+
+      if (!courses.has(courseID)) {
+
+        courses.set(
+          courseID,
+          []
+        );
+      }
+
+
+      courses
+        .get(courseID)
+        .push(ligne);
+
+    }
+  );
+
+
+  /*
+   * ==========================================
+   * TRANSFORMATION EN TABLEAU
+   * ==========================================
+   */
+
+  const confrontations = [];
+
+
+  courses.forEach(
+    function(
+      lignesCourse,
+      courseID
+    ) {
+
+      if (
+        lignesCourse.length < 2
+      ) {
+        return;
+      }
+
+
+      const premiereLigne =
+        lignesCourse[0];
+
+
+      confrontations.push({
+
+        courseID:
+          courseID,
+
+        hippodrome:
+          premiereLigne.HippodromeHistorique ||
+          premiereLigne.Hippodrome ||
+          "",
+
+        date:
+          premiereLigne.DateHistorique ||
+          "",
+
+        lignes:
+          lignesCourse
+
+      });
+
+    }
+  );
+
+
+  /*
+   * ==========================================
+   * TRI :
+   * PLUS RECENT → PLUS ANCIEN
+   * ==========================================
+   */
+
+  confrontations.sort(
+    function(a, b) {
+
+      return (
+        new Date(b.date) -
+        new Date(a.date)
+      );
+
+    }
+  );
+
+
+  /*
+   * ==========================================
+   * CONSTRUCTION HTML
+   * ==========================================
+   */
+
+  corps.innerHTML = "";
+
+
+  confrontations.forEach(
+    function(confrontation) {
+
+      /*
+       * Classement des chevaux.
+       *
+       * Les places numériques sont affichées
+       * en premier.
+       * DAI / 0 / autres résultats viennent
+       * ensuite.
+       */
+
+      const lignesClassees =
+        [...confrontation.lignes];
+
+
+      lignesClassees.sort(
+        function(a, b) {
+
+          const placeA =
+            extrairePlaceNumerique(
+              a.Place
+            );
+
+          const placeB =
+            extrairePlaceNumerique(
+              b.Place
+            );
+
+
+          const valeurA =
+            placeA !== null &&
+            placeA > 0
+              ? placeA
+              : 999;
+
+
+          const valeurB =
+            placeB !== null &&
+            placeB > 0
+              ? placeB
+              : 999;
+
+
+          return valeurA - valeurB;
+
+        }
+      );
+
+
+    const classement =
+  '<div class="liste-classement-confrontation">' +
+
+  lignesClassees
+    .map(
+      function(ligne) {
+
+        const cheval =
+          String(
+            ligne.Cheval || ""
+          ).trim();
+
+        const cleCheval =
+  normaliserCleChevalInterface(
+    ligne.Cheval
+  );
+
+const numeroActuel =
+  numerosActuels.get(
+    cleCheval
+  ) || "";
+
+  
+
+          const numero =
+  String(
+    ligne.Numero ||
+    ligne.Num ||
+    ligne["N°"] ||
+    ""
+  ).trim();
+
+        const placeBrute =
+          String(
+            ligne.Place || ""
+          ).trim();
+
+        const place =
+          extrairePlaceNumerique(
+            ligne.Place
+          );
+
+        let affichagePlace = "";
+
+
+        if (
+          place !== null &&
+          place > 0
+        ) {
+
+          affichagePlace =
+            place + "e";
+
+        } else if (
+          placeBrute
+            .toUpperCase()
+            .includes("DAI")
+        ) {
+
+          affichagePlace =
+            "DAI";
+
+        } else {
+
+          affichagePlace =
+            "NC";
+        }
+
+
+return `
+  <span class="cheval-confrontation">
+
+    <strong class="numero-confrontation">
+      ${numeroActuel}
+    </strong>
+
+    <span class="tiret-confrontation">—</span>
+
+    <span class="nom-cheval-confrontation">
+      ${cheval}
+    </span>
+
+    <span class="tiret-confrontation">—</span>
+
+    <strong class="place-confrontation">
+      ${affichagePlace}
+    </strong>
+
+  </span>
+`;
+      }
+    )
+    .join(
+      '<span class="separateur-confrontation">•</span>'
+    )
+
+  + '</div>';
+
+
+      /*
+       * Code réunion/course :
+       *
+       * R3C4_2026-07-26
+       * devient R3C4
+       */
+
+      const codeCourse =
+        confrontation.courseID
+          .split("_")[0];
+
+
+      /*
+       * Date française
+       */
+
+      let dateAffichee =
+        confrontation.date;
+
+
+      if (confrontation.date) {
+
+        const morceaux =
+          String(
+            confrontation.date
+          ).split("-");
+
+
+        if (
+          morceaux.length === 3
+        ) {
+
+          dateAffichee =
+            morceaux[2] +
+            "/" +
+            morceaux[1] +
+            "/" +
+            morceaux[0];
+        }
+      }
+
+
+      const tr =
+        document.createElement(
+          "tr"
+        );
+
+
+      tr.innerHTML = `
+        <td class="course-confrontation">
+          ${codeCourse}
+        </td>
+
+        <td>
+          ${confrontation.hippodrome}
+        </td>
+
+        <td class="date-confrontation">
+          ${dateAffichee}
+        </td>
+
+        <td class="classement-confrontation">
+          ${classement}
+        </td>
+      `;
+
+
+      corps.appendChild(
+        tr
+      );
+
+    }
+  );
+
+
+  zone.style.display =
+    "block";
+}
+
+function construireMapNumeroPartantActuel() {
+
+  const mapNumeros =
+    new Map();
+
+
+  const partantsActuels =
+    obtenirPartantsUniques(
+      lignesCourseCourante
+    );
+
+
+  partantsActuels.forEach(
+    function(partant) {
+
+      const cleCheval =
+        normaliserCleChevalInterface(
+          partant.Cheval
+        );
+
+
+      const numero =
+        partant.NuméroProgramme ||
+        partant.NumeroProgramme ||
+        partant.Numero ||
+        partant["N°"] ||
+        "";
+
+
+      if (
+        cleCheval &&
+        numero !== ""
+      ) {
+
+        mapNumeros.set(
+          cleCheval,
+          numero
+        );
+      }
+
+    }
+  );
+
+
+  return mapNumeros;
+}
+
+function filtrerTroisDerniersMois(
+  lignes
+) {
+
+  if (
+    !Array.isArray(lignes) ||
+    lignes.length === 0
+  ) {
+    return [];
+  }
+
+
+  /*
+   * Date de la course actuellement analysée.
+   *
+   * On recherche la date la plus récente disponible
+   * dans les lignes historiques.
+   */
+  const dates =
+    lignes
+      .map(function(ligne) {
+
+        return ligne.DateHistorique
+          ? new Date(ligne.DateHistorique)
+          : null;
+
+      })
+      .filter(function(date) {
+
+        return (
+          date &&
+          !isNaN(date.getTime())
+        );
+
+      });
+
+
+  if (dates.length === 0) {
+    return lignes;
+  }
+
+
+  const dateReference =
+    new Date(
+      Math.max(
+        ...dates.map(
+          date => date.getTime()
+        )
+      )
+    );
+
+
+  /*
+   * Recul de 3 mois calendaires.
+   */
+  const dateLimite =
+    new Date(dateReference);
+
+  dateLimite.setMonth(
+    dateLimite.getMonth() - 3
+  );
+
+
+  console.log(
+    "Filtre 3 mois :",
+    dateLimite.toLocaleDateString("fr-FR"),
+    "→",
+    dateReference.toLocaleDateString("fr-FR")
+  );
+
+
+  return lignes.filter(
+    function(ligne) {
+
+      if (!ligne.DateHistorique) {
+        return false;
+      }
+
+
+      const date =
+        new Date(
+          ligne.DateHistorique
+        );
+
+
+      if (
+        isNaN(date.getTime())
+      ) {
+        return false;
+      }
+
+
+      return (
+        date >= dateLimite &&
+        date <= dateReference
+      );
+
+    }
+  );
+}

@@ -930,3 +930,219 @@ select { width: 100%; padding: 10px 12px; border: 1px solid #cbd3dc; border-radi
 
   color: #64748b;
 }
+
+/* ==========================================
+   CONFRONTATIONS DIRECTES
+   ========================================== */
+
+.zone-confrontations-directes {
+  margin: 20px auto 25px;
+  max-width: 1050px;
+  width: 95%;
+}
+
+.tableau-confrontations-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tableau-confrontations {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  font-size: 13px;
+}
+
+.classement-confrontation {
+  white-space: nowrap;
+}
+
+
+
+
+.tableau-confrontations th {
+  padding: 10px 12px;
+
+  text-align: left;
+
+  background: #f3f6f9;
+
+  color: #334155;
+
+  font-weight: 700;
+
+  border-bottom: 1px solid #dbe3ec;
+}
+
+
+.tableau-confrontations td {
+  padding: 10px 12px;
+
+  border-bottom: 1px solid #e8edf2;
+
+  vertical-align: middle;
+}
+
+
+.tableau-confrontations tbody tr:last-child td {
+  border-bottom: none;
+}
+
+
+.course-confrontation {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+
+.date-confrontation {
+  white-space: nowrap;
+}
+
+
+.classement-confrontation {
+  line-height: 1.6;
+}
+
+
+.separateur-confrontation {
+  margin: 0 5px;
+
+  color: #94a3b8;
+}
+
+
+.aucune-confrontation {
+  padding: 18px !important;
+
+  text-align: center;
+
+  color: #64748b;
+}
+
+.liste-classement-confrontation {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cheval-confrontation {
+  white-space: nowrap;
+}
+
+.separateur-confrontation {
+  color: #94a3b8;
+  margin: 0 3px;
+}
+
+.tableau-confrontations th:last-child,
+.tableau-confrontations td:last-child {
+  width: 60%;
+}
+
+.numero-confrontation {
+  display: inline-block;
+
+  min-width: 20px;
+  margin-left: 4px;
+
+  font-weight: 700;
+  color: #1f3045;
+}
+
+.cheval-confrontation {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  gap: 5px;
+}
+
+.place-confrontation {
+  font-weight: 700;
+}
+
+.numero-confrontation {
+  font-weight: 800;
+}
+
+.tiret-confrontation {
+  font-weight: 700;
+  color: #64748b;
+}
+
+.nom-cheval-confrontation {
+  font-weight: 600;
+}
+
+.separateur-confrontation {
+  margin: 0 10px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.filtres-avances {
+  display: flex;
+  gap: 12px;
+
+  width: fit-content;
+  max-width: 100%;
+
+  margin: 20px 0;
+  padding: 10px;
+
+  background: #f8fafc;
+  border: 1px solid #dbe3ec;
+  border-radius: 8px;
+}
+
+.filtre-ligne {
+  width: 260px;
+  padding: 10px 12px;
+
+  background: #ffffff;
+  border: 1px solid #dbe3ec;
+  border-radius: 7px;
+}
+
+.filtre-ligne + .filtre-ligne {
+  border-top: 1px solid #dbe3ec;
+}
+
+.filtre-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  cursor: pointer;
+}
+
+.filtre-option input {
+  margin: 0;
+}
+
+.filtre-option strong {
+  font-size: 14px;
+}
+
+.filtre-description {
+  margin-top: 5px;
+  margin-left: 23px;
+
+  font-size: 11px;
+  line-height: 1.35;
+
+  color: #64748b;
+}
+
+@media (max-width: 650px) {
+
+  .filtres-avances {
+    flex-direction: column;
+    width: auto;
+  }
+
+  .filtre-ligne {
+    width: auto;
+  }
+}

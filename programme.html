@@ -139,22 +139,55 @@
 
       <div class="filtre-avance">
 
-  <label class="filtre-confrontations">
+  <div class="filtres-avances">
 
-    <input
-      type="checkbox"
-      id="filtreConfrontationsDirectes"
-    >
+  <div class="filtre-avance">
 
-    <span class="filtre-confrontations-titre">
-      Confrontations directes
-    </span>
+    <label class="filtre-option">
 
-  </label>
+      <input
+        type="checkbox"
+        id="filtreConfrontationsDirectes"
+      >
 
-  <div class="filtre-confrontations-description">
-    Limite l’historique aux courses communes entre les chevaux sélectionnés.
+      <span class="filtre-titre">
+        Confrontations directes
+      </span>
+
+    </label>
+
+    <div class="filtre-description">
+      Limite l’historique aux courses communes entre les chevaux sélectionnés.
+    </div>
+
   </div>
+
+
+  <div class="filtre-avance">
+
+    <label class="filtre-option">
+
+      <input
+        type="checkbox"
+        id="filtre3Mois"
+      >
+
+      <span class="filtre-titre">
+        3 derniers mois
+      </span>
+
+    </label>
+
+    
+   
+  <div class="filtre-confrontations-description">
+    Limite l'historique aux performances des 3 derniers mois.
+  </div>
+  </div>
+
+</div>
+
+
 
 </div>
     </div>
@@ -180,6 +213,38 @@
 
 <div class="chart-container chart-container-bulles">
   <canvas id="evolutionPerformances"></canvas>
+</div>
+
+<div
+  id="zoneConfrontationsDirectes"
+  class="zone-confrontations-directes"
+  style="display: none;"
+>
+
+  <h3 class="titre-confrontations">
+    ⚔️ Historique des confrontations directes
+  </h3>
+
+  <div class="tableau-confrontations-wrapper">
+
+    <table class="tableau-confrontations">
+
+      <thead>
+        <tr>
+          <th>Course</th>
+          <th>Hippodrome</th>
+          <th>Date</th>
+          <th>Résultats des partants présents</th>
+        </tr>
+      </thead>
+
+      <tbody id="corpsTableauConfrontations">
+      </tbody>
+
+    </table>
+
+  </div>
+
 </div>
 
 <p class="info-graphique-comparatif">

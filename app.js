@@ -70,6 +70,8 @@
 
     document
   .getElementById(
+
+
     "selectionnerTous"
   )
   .addEventListener(
@@ -2939,7 +2941,10 @@ function obtenirLignesChevauxSelectionnes() {
 }
 
 function mettreAJourGraphiquesSelection() {
-
+0
+console.log(
+  "=== ENTREE mettreAJourGraphiquesSelection ==="
+);
   /*
    * Données correspondant aux
    * chevaux actuellement sélectionnés.
@@ -2948,6 +2953,11 @@ function mettreAJourGraphiquesSelection() {
     obtenirLignesChevauxSelectionnes();
 
 
+
+  console.log(
+  "TEST COURSE COURANTE :",
+  lignesFiltrees[0]
+);
   /*
    * ==========================================
    * FILTRE : 3 DERNIERS MOIS
@@ -2957,6 +2967,7 @@ function mettreAJourGraphiquesSelection() {
     document.getElementById(
       "filtre3Mois"
     );
+  
 
 
   if (
@@ -3016,6 +3027,492 @@ function mettreAJourGraphiquesSelection() {
       lignesFiltrees.length
     );
   }
+/*
+ * ==========================================
+ * FILTRE : MÊME HIPPODROME
+ * ==========================================
+ */
+
+const caseMemeHippodrome =
+  document.getElementById(
+    "filtreMemeHippodrome"
+  );
+
+
+if (
+  caseMemeHippodrome &&
+  caseMemeHippodrome.checked
+) {
+
+  console.log(
+    "AVANT filtre hippodrome :",
+    lignesFiltrees.length
+  );
+
+
+  lignesFiltrees =
+    lignesFiltrees.filter(
+      function(ligne) {
+
+        const hippodromeProgramme =
+          String(
+            ligne.Hippodrome || ""
+          )
+            .trim()
+            .toUpperCase()
+            .normalize("NFD")
+            .replace(
+              /[\u0300-\u036f]/g,
+              ""
+            );
+
+
+        const hippodromeHistorique =
+          String(
+            ligne.HippodromeHistorique || ""
+          )
+            .trim()
+            .toUpperCase()
+            .normalize("NFD")
+            .replace(
+              /[\u0300-\u036f]/g,
+              ""
+            );
+
+
+        if (
+          !hippodromeProgramme ||
+          !hippodromeHistorique
+        ) {
+          return false;
+        }
+
+
+        return (
+          hippodromeHistorique ===
+          hippodromeProgramme
+        );
+
+      }
+    );
+
+
+  console.log(
+    "APRES filtre hippodrome :",
+    lignesFiltrees.length
+  );
+}
+
+/*
+ * ==========================================
+ * FILTRE : MÊME JOCKEY / DRIVER
+ * ==========================================
+ */
+
+const caseMemeJockey =
+  document.getElementById(
+    "filtreMemeJockey"
+  );
+
+
+if (
+  caseMemeJockey &&
+  caseMemeJockey.checked
+) {
+
+  console.log(
+    "AVANT filtre jockey :",
+    lignesFiltrees.length
+  );
+
+
+  lignesFiltrees =
+    lignesFiltrees.filter(
+      function(ligne) {
+
+        const jockeyProgramme =
+          String(
+            ligne.JockeyProgramme || ""
+          )
+            .trim()
+            .toUpperCase();
+
+
+        const jockeyHistorique =
+          String(
+            ligne.JockeyHistorique || ""
+          )
+            .trim()
+            .toUpperCase();
+
+
+        /*
+         * On élimine les données
+         * sans jockey/driver connu.
+         */
+        if (
+          !jockeyProgramme ||
+          !jockeyHistorique
+        ) {
+          return false;
+        }
+
+
+        return (
+          jockeyHistorique ===
+          jockeyProgramme
+        );
+
+      }
+    );
+
+
+  console.log(
+    "APRES filtre jockey :",
+    lignesFiltrees.length
+  );
+}
+  /*
+ * ==========================================
+ * FILTRE DISTANCE
+ * ==========================================
+ */
+
+const distanceMin =
+  document.getElementById(
+    "filtreDistanceMin"
+  )?.value || "";
+
+const distanceMax =
+  document.getElementById(
+    "filtreDistanceMax"
+  )?.value || "";
+
+
+if (
+  distanceMin !== "" ||
+  distanceMax !== ""
+) {
+
+  console.log(
+    "AVANT filtre distance :",
+    lignesFiltrees.length
+  );
+
+
+  lignesFiltrees =
+    filtrerParPlageNumerique(
+      lignesFiltrees,
+      "DistanceHistorique",
+      distanceMin,
+      distanceMax
+    );
+
+
+  console.log(
+    "APRES filtre distance :",
+    lignesFiltrees.length
+  );
+}
+
+/*
+ * ==========================================
+ * FILTRE : RÉDUCTION KILOMÉTRIQUE
+ * ==========================================
+ */
+
+const reductionMin =
+  document.getElementById(
+    "filtreReductionMin"
+  )?.value.trim() || "";
+
+const reductionMax =
+  document.getElementById(
+    "filtreReductionMax"
+  )?.value.trim() || "";
+
+
+if (
+  reductionMin !== "" ||
+  reductionMax !== ""
+) {
+
+  const minSecondes =
+    reductionMin !== ""
+      ? convertirReductionEnSecondes(
+          reductionMin
+        )
+      : null;
+
+  const maxSecondes =
+    reductionMax !== ""
+      ? convertirReductionEnSecondes(
+          reductionMax
+        )
+      : null;
+
+
+  console.log(
+    "AVANT filtre réduction :",
+    lignesFiltrees.length
+  );
+
+
+  lignesFiltrees =
+    lignesFiltrees.filter(
+      function(ligne) {
+
+        const valeur =
+          convertirReductionEnSecondes(
+            ligne.RéductionKm
+          );
+
+
+        if (valeur === null) {
+          return false;
+        }
+
+
+        if (
+          minSecondes !== null &&
+          valeur < minSecondes
+        ) {
+          return false;
+        }
+
+
+        if (
+          maxSecondes !== null &&
+          valeur > maxSecondes
+        ) {
+          return false;
+        }
+
+
+        return true;
+      }
+    );
+
+
+  console.log(
+    "APRES filtre réduction :",
+    lignesFiltrees.length
+  );
+}
+
+
+/*
+ * ==========================================
+ * FILTRE ALLOCATION
+ * ==========================================
+ */
+
+const allocationMin =
+  document.getElementById(
+    "filtreAllocationMin"
+  )?.value || "";
+
+const allocationMax =
+  document.getElementById(
+    "filtreAllocationMax"
+  )?.value || "";
+
+
+if (
+  allocationMin !== "" ||
+  allocationMax !== ""
+) {
+
+  console.log(
+    "AVANT filtre allocation :",
+    lignesFiltrees.length
+  );
+
+
+  lignesFiltrees =
+    filtrerParPlageNumerique(
+      lignesFiltrees,
+      "AllocationHistorique",
+      allocationMin,
+      allocationMax
+    );
+
+
+  console.log(
+    "APRES filtre allocation :",
+    lignesFiltrees.length
+  );
+}
+
+
+/*
+ * ==========================================
+ * FILTRE NOMBRE DE PARTANTS
+ * ==========================================
+ */
+
+const partantsMin =
+  document.getElementById(
+    "filtrePartantsMin"
+  )?.value || "";
+
+const partantsMax =
+  document.getElementById(
+    "filtrePartantsMax"
+  )?.value || "";
+
+
+if (
+  partantsMin !== "" ||
+  partantsMax !== ""
+) {
+
+  console.log(
+    "AVANT filtre partants :",
+    lignesFiltrees.length
+  );
+
+
+  lignesFiltrees =
+    filtrerParPlageNumerique(
+      lignesFiltrees,
+      "NombrePartantsHistorique",
+      partantsMin,
+      partantsMax
+    );
+
+
+  console.log(
+    "APRES filtre partants :",
+    lignesFiltrees.length
+  );
+}
+
+
+/*
+ * ==========================================
+ * FILTRE RÉSULTATS RÉCENTS
+ * ==========================================
+ */
+
+const nombreCoursesRecentes =
+  Number(
+    document.getElementById(
+      "filtreNombreCoursesRecentes"
+    )?.value || 10
+  );
+
+
+console.log(
+  "=== BLOC RESULTATS RECENTS ==="
+);
+
+
+function lirePourcentage(id) {
+
+  const element =
+    document.getElementById(
+      id
+    );
+
+  if (!element) {
+    return null;
+  }
+
+
+  const texte =
+    String(
+      element.value || ""
+    ).trim();
+
+
+  if (texte === "") {
+    return null;
+  }
+
+
+  const valeur =
+    Number(texte);
+
+
+  return Number.isFinite(valeur)
+    ? valeur
+    : null;
+}
+
+
+const criteresResultats = {
+
+  victoires:
+    lirePourcentage(
+      "filtrePctVictoires"
+    ),
+
+  top3:
+    lirePourcentage(
+      "filtrePctTop3"
+    ),
+
+  top7:
+    lirePourcentage(
+      "filtrePctTop7"
+    ),
+
+  nc:
+    lirePourcentage(
+      "filtrePctNC"
+    ),
+
+  disqualifie:
+    lirePourcentage(
+      "filtrePctDisqualifie"
+    )
+};
+
+
+console.log(
+  "CRITERES RESULTATS :",
+  criteresResultats,
+  "Nombre courses :",
+  nombreCoursesRecentes
+);
+
+
+const filtreResultatsActif =
+  Object.values(
+    criteresResultats
+  ).some(
+    function(valeur) {
+
+      return valeur !== null;
+
+    }
+  );
+
+
+if (
+  filtreResultatsActif
+) {
+
+  console.log(
+    "AVANT filtre résultats :",
+    lignesFiltrees.length
+  );
+
+
+  lignesFiltrees =
+    filtrerChevauxParResultatsRecents(
+      lignesFiltrees,
+      nombreCoursesRecentes,
+      criteresResultats
+    );
+
+
+  console.log(
+    "APRES filtre résultats :",
+    lignesFiltrees.length
+  );
+}
 
 
   /*
@@ -3042,6 +3539,8 @@ function mettreAJourGraphiquesSelection() {
   afficherTableauConfrontationsDirectes(
     lignesFiltrees
   );
+
+  afficherResumeFiltresActifs();
 
 }
 
@@ -6361,76 +6860,416 @@ function filtrerConfrontationsDirectes(
   );
 }
 
+/*
+ * ==========================================
+ * GESTION DES FILTRES AVANCÉS
+ * Compatible avec contenu chargé dynamiquement
+ * ==========================================
+ */
+
+/*
+/*
+ * ==========================================
+ * PANNEAU FILTRES AVANCÉS
+ * Ouverture / fermeture / application
+ * ==========================================
+ */
+
 document.addEventListener(
-  "DOMContentLoaded",
-  function() {
+  "click",
+  function(event) {
 
-    const caseConfrontations =
-      document.getElementById(
-        "filtreConfrontationsDirectes"
-      );
+    /*
+     * ========================================
+     * OUVERTURE DU PANNEAU
+     * ========================================
+     */
+    if (
+      event.target.closest(
+        "#boutonFiltresAvances"
+      )
+    ) {
 
-    if (!caseConfrontations) {
+      const panneau =
+        document.getElementById(
+          "panneauFiltresAvances"
+        );
 
-      console.warn(
-        "Case filtreConfrontationsDirectes introuvable"
-      );
+      if (panneau) {
+
+        console.log(
+          "OUVERTURE FILTRES"
+        );
+
+        panneau.classList.add(
+          "ouvert"
+        );
+      }
 
       return;
     }
 
 
-    console.log(
-      "Filtre confrontations initialisé"
-    );
+    /*
+     * ========================================
+     * FERMETURE AVEC LA CROIX ×
+     * ========================================
+     */
+    if (
+      event.target.closest(
+        "#fermerFiltresAvances"
+      )
+    ) {
 
-
-    caseConfrontations.addEventListener(
-      "change",
-      function() {
-
-        console.log(
-          "Case confrontations modifiée :",
-          caseConfrontations.checked
+      const panneau =
+        document.getElementById(
+          "panneauFiltresAvances"
         );
 
-        mettreAJourGraphiquesSelection();
-      }
-    );
-/*
- * ==========================================
- * FILTRE 3 DERNIERS MOIS
- * ==========================================
- */
+      if (panneau) {
 
-const case3Mois =
-  document.getElementById(
-    "filtre3Mois"
+        console.log(
+          "FERMETURE FILTRES"
+        );
+
+        panneau.classList.remove(
+          "ouvert"
+        );
+      }
+
+      return;
+    }
+
+
+    /*
+/*
+ * ========================================
+ * APPLIQUER LES FILTRES
+ * ========================================
+ */
+if (
+  event.target.closest(
+    "#appliquerFiltres"
+  )
+) {
+
+  console.log(
+    "APPLICATION FILTRES AVANCÉS"
   );
 
+  /*
+   * Mise à jour des graphiques
+   * sans fermer le panneau.
+   */
+  mettreAJourGraphiquesSelection();
 
-if (case3Mois) {
+  return;
+}
 
-  case3Mois.addEventListener(
-    "change",
-    function() {
+    /*
+     * ========================================
+     * RÉINITIALISER LES FILTRES
+     * ========================================
+     */
+    if (
+      event.target.closest(
+        "#reinitialiserFiltres"
+      )
+    ) {
 
       console.log(
-        "Filtre 3 mois modifié :",
-        case3Mois.checked
+        "REINITIALISATION FILTRES"
       );
 
+
+      /*
+       * Cases à cocher
+       */
+      const case3Mois =
+        document.getElementById(
+          "filtre3Mois"
+        );
+
+      if (case3Mois) {
+        case3Mois.checked = false;
+      }
+
+
+      const caseConfrontations =
+        document.getElementById(
+          "filtreConfrontationsDirectes"
+        );
+
+      if (caseConfrontations) {
+        caseConfrontations.checked = false;
+      }
+
+      const caseMemeHippodrome =
+      document.getElementById(
+      "filtreMemeHippodrome"
+      );
+
+      if (caseMemeHippodrome) {
+      caseMemeHippodrome.checked = false;
+      }
+
+      const caseMemeJockey =
+  document.getElementById(
+    "filtreMemeJockey"
+  );
+
+if (caseMemeJockey) {
+  caseMemeJockey.checked = false;
+}
+
+
+      /*
+       * Champs min / max
+       */
+      const champs = [
+        "filtreDistanceMin",
+        "filtreDistanceMax",
+        "filtreReductionMin",
+        "filtreReductionMax",
+        "filtreAllocationMin",
+        "filtreAllocationMax",
+        "filtrePartantsMin",
+        "filtrePartantsMax",
+
+          /*
+   * Résultats récents
+   */
+      "filtrePctVictoires",
+      "filtrePctTop3",
+      "filtrePctTop7",
+      "filtrePctNC",
+      "filtrePctDisqualifie"
+      ];
+
+
+      champs.forEach(
+        function(id) {
+
+          const element =
+            document.getElementById(
+              id
+            );
+
+          if (element) {
+            element.value = "";
+          }
+
+        }
+      );
+
+
+      /*
+       * Retour à l'historique complet
+       */
+      mettreAJourGraphiquesSelection();
+
+
+      /*
+       * On laisse volontairement
+       * le panneau ouvert.
+       */
+      return;
+    }
+
+  /*
+ * ========================================
+ * SUPPRESSION D'UN FILTRE ACTIF
+ * ========================================
+ */
+
+if (
+  event.target.closest(
+    ".supprimer-filtre-actif"
+  )
+) {
+
+  const bouton =
+    event.target.closest(
+      ".supprimer-filtre-actif"
+    );
+
+  const conteneur =
+    document.getElementById(
+      "resumeFiltresActifs"
+    );
+
+
+  if (
+    conteneur &&
+    conteneur._filtresActifs
+  ) {
+
+    const index =
+      Number(
+        bouton.dataset.index
+      );
+
+    const filtre =
+      conteneur
+        ._filtresActifs[index];
+
+
+    if (filtre) {
+
+      /*
+       * Checkbox
+       */
+      if (
+        filtre.type ===
+        "checkbox"
+      ) {
+
+        const element =
+          document.getElementById(
+            filtre.id
+          );
+
+        if (element) {
+          element.checked = false;
+        }
+      }
+
+
+      /*
+       * Plage Min / Max
+       */
+      if (
+        filtre.type ===
+        "plage"
+      ) {
+
+        filtre.ids.forEach(
+          function(id) {
+
+            const element =
+              document.getElementById(
+                id
+              );
+
+            if (element) {
+              element.value = "";
+            }
+
+          }
+        );
+      }
+
+
+      /*
+       * Recalcul immédiat
+       */
       mettreAJourGraphiquesSelection();
 
     }
-  );
-}
   }
 
+  return;
+}
 
-
-  
+  }
 );
+
+
+
+/*
+ * ==========================================
+ * FERMETURE AVEC TOUCHE ÉCHAP
+ * ==========================================
+ */
+
+document.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (
+      event.key !== "Escape"
+    ) {
+      return;
+    }
+
+
+    const panneau =
+      document.getElementById(
+        "panneauFiltresAvances"
+      );
+
+
+    if (panneau) {
+
+      panneau.classList.remove(
+        "ouvert"
+      );
+    }
+
+  }
+);
+
+/*
+ * ==========================================
+ * MODIFICATION DES FILTRES
+ * ==========================================
+ */
+document.addEventListener(
+  "change",
+  function(event) {
+
+    if (
+      event.target.id ===
+      "filtreConfrontationsDirectes"
+    ) {
+
+      mettreAJourGraphiquesSelection();
+      return;
+    }
+
+
+    if (
+      event.target.id ===
+      "filtre3Mois"
+    ) {
+
+      mettreAJourGraphiquesSelection();
+      return;
+    }
+
+
+    if (
+      event.target.id ===
+      "filtreMemeHippodrome"
+    ) {
+
+      console.log(
+        "Filtre même hippodrome :",
+        event.target.checked
+      );
+
+      mettreAJourGraphiquesSelection();
+      return;
+    }
+
+    if (
+  event.target.id ===
+  "filtreMemeJockey"
+) {
+
+  console.log(
+    "Filtre même jockey :",
+    event.target.checked
+  );
+
+  mettreAJourGraphiquesSelection();
+
+  return;
+}
+
+  }
+);
+ 
 
 function afficherTableauConfrontationsDirectes(
   lignes
@@ -6990,4 +7829,904 @@ function filtrerTroisDerniersMois(
 
     }
   );
+}
+
+function filtrerParPlageNumerique(
+  lignes,
+  champ,
+  valeurMin,
+  valeurMax
+) {
+
+  if (
+    !Array.isArray(lignes) ||
+    lignes.length === 0
+  ) {
+    return [];
+  }
+
+
+  const min =
+    valeurMin !== ""
+      ? Number(valeurMin)
+      : null;
+
+  const max =
+    valeurMax !== ""
+      ? Number(valeurMax)
+      : null;
+
+
+  return lignes.filter(
+    function(ligne) {
+
+      /*
+       * Valeur brute issue du CSV
+       */
+      const valeurBrute =
+        ligne[champ];
+
+
+      /*
+       * Nettoyage :
+       *
+       * "2150m"      → 2150
+       * "52 800 €"   → 52800
+       * "10"         → 10
+       * "56,5 kg"    → 56.5
+       */
+      const texte =
+        String(
+          valeurBrute || ""
+        )
+          .replace(/\s/g, "")
+          .replace(",", ".")
+          .replace(
+            /[^\d.-]/g,
+            ""
+          );
+
+
+      const valeur =
+        parseFloat(
+          texte
+        );
+
+
+      /*
+       * Donnée absente ou non exploitable
+       */
+      if (
+        !Number.isFinite(valeur)
+      ) {
+        return false;
+      }
+
+
+      if (
+        min !== null &&
+        valeur < min
+      ) {
+        return false;
+      }
+
+
+      if (
+        max !== null &&
+        valeur > max
+      ) {
+        return false;
+      }
+
+
+      return true;
+
+    }
+  );
+}
+
+function convertirReductionEnSecondes(
+  valeur
+) {
+
+  const texte =
+    String(valeur || "")
+      .trim()
+      .replace(/\s/g, "")
+      .replace(/''/g, '"');
+
+
+  if (!texte) {
+    return null;
+  }
+
+
+  /*
+   * Exemples :
+   * 01'15''40
+   * 1'15''4
+   * 1'12''0
+   */
+
+  const match =
+    texte.match(
+      /(\d+)'(\d+)"(\d+)?/
+    );
+
+
+  if (!match) {
+    return null;
+  }
+
+
+  const minutes =
+    Number(match[1]);
+
+  const secondes =
+    Number(match[2]);
+
+  const decimales =
+    match[3]
+      ? Number(
+          "0." + match[3]
+        )
+      : 0;
+
+
+  return (
+    minutes * 60 +
+    secondes +
+    decimales
+  );
+}
+
+function afficherResumeFiltresActifs() {
+
+  const conteneur =
+    document.getElementById(
+      "resumeFiltresActifs"
+    );
+
+  if (!conteneur) {
+    return;
+  }
+
+
+  const filtres = [];
+
+
+  /*
+   * ==========================================
+   * 3 DERNIERS MOIS
+   * ==========================================
+   */
+
+  const filtre3Mois =
+    document.getElementById(
+      "filtre3Mois"
+    );
+
+  if (
+    filtre3Mois &&
+    filtre3Mois.checked
+  ) {
+
+    filtres.push({
+      texte: "3 derniers mois",
+      id: "filtre3Mois",
+      type: "checkbox"
+    });
+
+  }
+
+
+  /*
+   * ==========================================
+   * CONFRONTATIONS DIRECTES
+   * ==========================================
+   */
+
+  const confrontations =
+    document.getElementById(
+      "filtreConfrontationsDirectes"
+    );
+
+  if (
+    confrontations &&
+    confrontations.checked
+  ) {
+
+    filtres.push({
+      texte: "Confrontations directes",
+      id: "filtreConfrontationsDirectes",
+      type: "checkbox"
+    });
+
+  }
+
+
+  /*
+   * ==========================================
+   * MÊME HIPPODROME
+   * ==========================================
+   */
+
+  const memeHippodrome =
+    document.getElementById(
+      "filtreMemeHippodrome"
+    );
+
+  if (
+    memeHippodrome &&
+    memeHippodrome.checked
+  ) {
+
+    filtres.push({
+      texte: "Même hippodrome",
+      id: "filtreMemeHippodrome",
+      type: "checkbox"
+    });
+
+  }
+
+
+  /*
+   * ==========================================
+   * MÊME JOCKEY / DRIVER
+   * ==========================================
+   */
+
+  const memeJockey =
+    document.getElementById(
+      "filtreMemeJockey"
+    );
+
+  if (
+    memeJockey &&
+    memeJockey.checked
+  ) {
+
+    filtres.push({
+      texte: "Même jockey / driver",
+      id: "filtreMemeJockey",
+      type: "checkbox"
+    });
+
+  }
+
+
+  /*
+   * ==========================================
+   * DISTANCE
+   * ==========================================
+   */
+
+  const distanceMin =
+    document.getElementById(
+      "filtreDistanceMin"
+    )?.value || "";
+
+  const distanceMax =
+    document.getElementById(
+      "filtreDistanceMax"
+    )?.value || "";
+
+
+  if (
+    distanceMin !== "" ||
+    distanceMax !== ""
+  ) {
+
+    let texte = "Distance : ";
+
+    if (
+      distanceMin !== "" &&
+      distanceMax !== ""
+    ) {
+
+      texte +=
+        distanceMin +
+        "–" +
+        distanceMax +
+        " m";
+
+    } else if (
+      distanceMin !== ""
+    ) {
+
+      texte +=
+        "≥ " +
+        distanceMin +
+        " m";
+
+    } else {
+
+      texte +=
+        "≤ " +
+        distanceMax +
+        " m";
+    }
+
+
+    filtres.push({
+      texte: texte,
+      ids: [
+        "filtreDistanceMin",
+        "filtreDistanceMax"
+      ],
+      type: "plage"
+    });
+
+  }
+
+
+  /*
+   * ==========================================
+   * ALLOCATION
+   * ==========================================
+   */
+
+  const allocationMin =
+    document.getElementById(
+      "filtreAllocationMin"
+    )?.value || "";
+
+  const allocationMax =
+    document.getElementById(
+      "filtreAllocationMax"
+    )?.value || "";
+
+
+  if (
+    allocationMin !== "" ||
+    allocationMax !== ""
+  ) {
+
+    let texte = "Allocation : ";
+
+    if (
+      allocationMin !== "" &&
+      allocationMax !== ""
+    ) {
+
+      texte +=
+        allocationMin +
+        "–" +
+        allocationMax +
+        " €";
+
+    } else if (
+      allocationMin !== ""
+    ) {
+
+      texte +=
+        "≥ " +
+        allocationMin +
+        " €";
+
+    } else {
+
+      texte +=
+        "≤ " +
+        allocationMax +
+        " €";
+    }
+
+
+    filtres.push({
+      texte: texte,
+      ids: [
+        "filtreAllocationMin",
+        "filtreAllocationMax"
+      ],
+      type: "plage"
+    });
+
+  }
+
+
+  /*
+   * ==========================================
+   * NOMBRE DE PARTANTS
+   * ==========================================
+   */
+
+  const partantsMin =
+    document.getElementById(
+      "filtrePartantsMin"
+    )?.value || "";
+
+  const partantsMax =
+    document.getElementById(
+      "filtrePartantsMax"
+    )?.value || "";
+
+
+  if (
+    partantsMin !== "" ||
+    partantsMax !== ""
+  ) {
+
+    let texte = "Partants : ";
+
+    if (
+      partantsMin !== "" &&
+      partantsMax !== ""
+    ) {
+
+      texte +=
+        partantsMin +
+        "–" +
+        partantsMax;
+
+    } else if (
+      partantsMin !== ""
+    ) {
+
+      texte +=
+        "≥ " +
+        partantsMin;
+
+    } else {
+
+      texte +=
+        "≤ " +
+        partantsMax;
+    }
+
+
+    filtres.push({
+      texte: texte,
+      ids: [
+        "filtrePartantsMin",
+        "filtrePartantsMax"
+      ],
+      type: "plage"
+    });
+
+  }
+
+
+  /*
+   * ==========================================
+   * RÉDUCTION KILOMÉTRIQUE
+   * ==========================================
+   */
+
+  const reductionMin =
+    document.getElementById(
+      "filtreReductionMin"
+    )?.value || "";
+
+  const reductionMax =
+    document.getElementById(
+      "filtreReductionMax"
+    )?.value || "";
+
+
+  if (
+    reductionMin !== "" ||
+    reductionMax !== ""
+  ) {
+
+    let texte =
+      "Réduction km : ";
+
+    if (
+      reductionMin !== "" &&
+      reductionMax !== ""
+    ) {
+
+      texte +=
+        reductionMin +
+        " – " +
+        reductionMax;
+
+    } else if (
+      reductionMin !== ""
+    ) {
+
+      texte +=
+        "≥ " +
+        reductionMin;
+
+    } else {
+
+      texte +=
+        "≤ " +
+        reductionMax;
+    }
+
+
+    filtres.push({
+      texte: texte,
+      ids: [
+        "filtreReductionMin",
+        "filtreReductionMax"
+      ],
+      type: "plage"
+    });
+
+  }
+
+
+  /*
+   * ==========================================
+   * CRÉATION DES BADGES
+   * ==========================================
+   */
+
+  conteneur.innerHTML = "";
+
+
+  filtres.forEach(
+    function(filtre, index) {
+
+      const badge =
+        document.createElement(
+          "div"
+        );
+
+      badge.className =
+        "badge-filtre-actif";
+
+
+      const texte =
+        document.createElement(
+          "span"
+        );
+
+      texte.textContent =
+        filtre.texte;
+
+
+      const supprimer =
+        document.createElement(
+          "button"
+        );
+
+      supprimer.type =
+        "button";
+
+      supprimer.className =
+        "supprimer-filtre-actif";
+
+      supprimer.textContent =
+        "×";
+
+      supprimer.dataset.index =
+        String(index);
+
+
+      badge.appendChild(
+        texte
+      );
+
+      badge.appendChild(
+        supprimer
+      );
+
+      conteneur.appendChild(
+        badge
+      );
+
+    }
+  );
+
+
+  /*
+   * On conserve temporairement la liste
+   * pour savoir quel filtre supprimer.
+   */
+  conteneur._filtresActifs =
+    filtres;
+}
+
+function filtrerChevauxParResultatsRecents(
+  lignes,
+  nombreCourses,
+  criteres
+) {
+
+  if (
+    !Array.isArray(lignes) ||
+    lignes.length === 0
+  ) {
+    return [];
+  }
+
+
+  const groupes =
+    new Map();
+
+
+  lignes.forEach(
+    function(ligne) {
+
+      const cle =
+        normaliserCleChevalInterface(
+          ligne.Cheval
+        );
+
+
+      if (!groupes.has(cle)) {
+
+        groupes.set(
+          cle,
+          []
+        );
+      }
+
+
+      groupes
+        .get(cle)
+        .push(ligne);
+
+    }
+  );
+
+
+  const chevauxConserves =
+    new Set();
+
+
+  groupes.forEach(
+    function(
+      historique,
+      cleCheval
+    ) {
+
+      /*
+       * Tri du plus récent
+       * au plus ancien.
+       */
+      const historiqueTrie =
+        [...historique].sort(
+          function(a, b) {
+
+            return (
+              new Date(b.DateHistorique) -
+              new Date(a.DateHistorique)
+            );
+
+          }
+        );
+
+
+      /*
+       * On prend uniquement les N
+       * dernières courses.
+       */
+      const dernieresCourses =
+        historiqueTrie.slice(
+          0,
+          nombreCourses
+        );
+
+
+      const total =
+        dernieresCourses.length;
+
+
+      if (total === 0) {
+        return;
+      }
+
+
+      let victoires = 0;
+      let top3 = 0;
+      let top7 = 0;
+      let nonClasses = 0;
+      let disqualifies = 0;
+
+
+      dernieresCourses.forEach(
+        function(ligne) {
+
+          const placeBrute =
+            String(
+              ligne.Place || ""
+            )
+              .trim()
+              .toUpperCase();
+
+
+          const statut =
+            String(
+              ligne.StatutHistorique || ""
+            )
+              .trim()
+              .toUpperCase();
+
+
+          /*
+           * Disqualifié
+           */
+          if (
+            statut.includes("DISQUAL") ||
+            placeBrute.includes("DAI") ||
+            placeBrute === "D"
+          ) {
+
+            disqualifies++;
+            return;
+          }
+
+
+          /*
+           * Place numérique
+           */
+          const place =
+            extrairePlaceNumerique(
+              ligne.Place
+            );
+
+
+          if (
+            place !== null &&
+            place > 0
+          ) {
+
+            if (place === 1) {
+              victoires++;
+            }
+
+            if (place <= 3) {
+              top3++;
+            }
+
+            if (place <= 7) {
+              top7++;
+            }
+
+            return;
+          }
+
+
+          /*
+           * Sinon : non classé
+           */
+          nonClasses++;
+
+        }
+      );
+
+
+      const pctVictoires =
+        victoires / total * 100;
+
+      const pctTop3 =
+        top3 / total * 100;
+
+      const pctTop7 =
+        top7 / total * 100;
+
+      const pctNC =
+        nonClasses / total * 100;
+
+      const pctDisqualifie =
+        disqualifies / total * 100;
+
+
+      console.log(
+        "STATS RECENTES :",
+        cleCheval,
+        {
+          total,
+          victoires,
+          top3,
+          top7,
+          nonClasses,
+          disqualifies,
+          pctVictoires,
+          pctTop3,
+          pctTop7,
+          pctNC,
+          pctDisqualifie
+        }
+      );
+
+
+      let valide = true;
+
+
+      if (
+        criteres.victoires !== null &&
+        pctVictoires < criteres.victoires
+      ) {
+        valide = false;
+      }
+
+
+      if (
+        criteres.top3 !== null &&
+        pctTop3 < criteres.top3
+      ) {
+        valide = false;
+      }
+
+
+      if (
+        criteres.top7 !== null &&
+        pctTop7 < criteres.top7
+      ) {
+        valide = false;
+      }
+
+
+      if (
+        criteres.nc !== null &&
+        pctNC > criteres.nc
+      ) {
+        valide = false;
+      }
+
+
+      if (
+        criteres.disqualifie !== null &&
+        pctDisqualifie > criteres.disqualifie
+      ) {
+        valide = false;
+      }
+
+
+      if (valide) {
+
+        chevauxConserves.add(
+          cleCheval
+        );
+      }
+
+    }
+  );
+
+
+  return lignes.filter(
+    function(ligne) {
+
+      return chevauxConserves.has(
+        normaliserCleChevalInterface(
+          ligne.Cheval
+        )
+      );
+
+    }
+  );
+}
+
+function obtenirDisciplineGenerale(
+  discipline
+) {
+
+  const valeur =
+    String(discipline || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      );
+
+
+  if (
+    valeur.includes("attele") ||
+    valeur.includes("monte") ||
+    valeur.includes("trot")
+  ) {
+    return "TROT";
+  }
+
+
+  if (
+    valeur.includes("plat") ||
+    valeur.includes("haie") ||
+    valeur.includes("steeple") ||
+    valeur.includes("galop")
+  ) {
+    return "GALOP";
+  }
+
+
+  return "";
 }

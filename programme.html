@@ -137,56 +137,523 @@
          <div class="selection-chevaux-header">
 
 
-      <div class="filtre-avance">
+     <div class="barre-filtres">
 
-  <div class="filtres-avances">
+  <button
+    type="button"
+    id="boutonFiltresAvances"
+    class="bouton-filtres-avances"
+  >
+  ⚙ FILTRES AVANCÉS
+  </button>
 
-  <div class="filtre-avance">
-
-    <label class="filtre-option">
-
-      <input
-        type="checkbox"
-        id="filtreConfrontationsDirectes"
-      >
-
-      <span class="filtre-titre">
-        Confrontations directes
-      </span>
-
-    </label>
-
-    <div class="filtre-description">
-      Limite l’historique aux courses communes entre les chevaux sélectionnés.
-    </div>
-
-  </div>
-
-
-  <div class="filtre-avance">
-
-    <label class="filtre-option">
-
-      <input
-        type="checkbox"
-        id="filtre3Mois"
-      >
-
-      <span class="filtre-titre">
-        3 derniers mois
-      </span>
-
-    </label>
-
-    
-   
-  <div class="filtre-confrontations-description">
-    Limite l'historique aux performances des 3 derniers mois.
-  </div>
+  <div
+    id="resumeFiltresActifs"
+    class="resume-filtres-actifs"
+  >
   </div>
 
 </div>
 
+
+</div>
+
+
+<!-- ========================================
+     PANNEAU FILTRES AVANCÉS
+     ======================================== -->
+
+<div
+  id="panneauFiltresAvances"
+  class="panneau-filtres-avances"
+>
+
+  <div class="entete-panneau-filtres">
+
+    <h3>
+      Filtres avancés
+    </h3>
+
+<button
+  type="button"
+  id="fermerFiltresAvances"
+  class="bouton-fermer-filtres"
+  aria-label="Fermer les filtres"
+>
+  ×
+</button>
+
+
+  </div>
+
+
+  <div class="contenu-panneau-filtres">
+
+
+    <!-- PÉRIODE -->
+
+    <div class="groupe-filtres">
+
+      <h4>
+        Période
+      </h4>
+
+      <label class="filtre-option">
+
+        <input
+          type="checkbox"
+          id="filtre3Mois"
+        >
+
+        <span>
+          3 derniers mois
+        </span>
+
+      </label>
+
+      <div class="filtre-description">
+        Limite l'historique aux performances
+        des 3 derniers mois.
+      </div>
+
+    </div>
+
+
+    <!-- COMPARAISON -->
+
+    <div class="groupe-filtres">
+
+      <h4>
+        Comparaison
+      </h4>
+
+      <label class="filtre-option">
+
+        <input
+          type="checkbox"
+          id="filtreConfrontationsDirectes"
+        >
+
+        <span>
+          Confrontations directes
+        </span>
+
+      </label>
+
+      <div class="filtre-description">
+        Limite l'historique aux courses communes
+        entre les chevaux sélectionnés.
+      </div>
+
+    </div>
+
+
+    <!-- DISTANCE -->
+
+    <div class="groupe-filtres">
+
+      <h4>
+        Distance
+      </h4>
+
+      <div class="filtre-plage">
+
+        <label>
+          Min
+          <input
+  type="number"
+  id="filtreDistanceMin"
+  placeholder="Min"
+>
+
+        </label>
+
+        <span>
+          à
+        </span>
+
+        <label>
+          Max
+         <input
+  type="number"
+  id="filtreDistanceMax"
+  placeholder="Max"
+>
+        </label>
+
+        <span>
+          m
+        </span>
+
+      </div>
+
+    </div>
+
+    <div class="groupe-filtres">
+
+  <h4>
+    Réduction kilométrique
+  </h4>
+
+  <div class="filtre-plage">
+
+    <label>
+      De
+      <input
+        type="text"
+        id="filtreReductionMin"
+        placeholder="1'12''0"
+      >
+    </label>
+
+    <span>
+      à
+    </span>
+
+    <label>
+      À
+      <input
+        type="text"
+        id="filtreReductionMax"
+        placeholder="1'16''0"
+      >
+    </label>
+
+  </div>
+
+  <div class="filtre-description">
+    Limite l'historique aux performances comprises
+    dans la plage de réduction kilométrique indiquée.
+  </div>
+
+</div>
+
+
+
+    <div class="groupe-filtres">
+
+  <h4>
+    Hippodrome
+  </h4>
+
+  <label class="filtre-option">
+
+    <input
+      type="checkbox"
+      id="filtreMemeHippodrome"
+    >
+
+    <span>
+      Même hippodrome
+    </span>
+
+  </label>
+
+  <div class="filtre-description">
+    Conserve uniquement les performances réalisées
+    sur le même hippodrome que la course analysée.
+  </div>
+
+  <div class="groupe-filtres">
+
+  <h4>
+    Jockey / Driver
+  </h4>
+
+  <label class="filtre-option">
+
+    <input
+      type="checkbox"
+      id="filtreMemeJockey"
+    >
+
+    <span>
+      Même jockey / driver
+    </span>
+
+  </label>
+
+  <div class="filtre-description">
+    Conserve uniquement les performances réalisées
+    avec le même jockey ou driver que pour la course actuelle.
+  </div>
+
+</div>
+
+</div>
+
+
+    <!-- ALLOCATION -->
+
+    <div class="groupe-filtres">
+
+      <h4>
+        Allocation
+      </h4>
+
+      <div class="filtre-plage">
+
+        <label>
+          Min
+          <input
+            type="number"
+            id="filtreAllocationMin"
+            placeholder="20000"
+          >
+        </label>
+
+        <span>
+          à
+        </span>
+
+        <label>
+          Max
+          <input
+            type="number"
+            id="filtreAllocationMax"
+            placeholder="60000"
+          >
+        </label>
+
+        <span>
+          €
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <!-- NOMBRE DE PARTANTS -->
+
+    <div class="groupe-filtres">
+
+      <h4>
+        Nombre de partants
+      </h4>
+
+      <div class="filtre-plage">
+
+        <label>
+          Min
+          <input
+            type="number"
+            id="filtrePartantsMin"
+            placeholder="8"
+          >
+        </label>
+
+        <span>
+          à
+        </span>
+
+        <label>
+          Max
+          <input
+            type="number"
+            id="filtrePartantsMax"
+            placeholder="16"
+          >
+        </label>
+
+      </div>
+
+    </div>
+
+     <div class="groupe-filtres">
+
+  <h4>
+    Résultats récents
+  </h4>
+
+  <div class="filtre-description">
+    Calcule les critères sur les dernières
+    performances de chaque cheval.
+  </div>
+
+  <div class="filtre-resultats">
+
+    <label>
+      Nombre de courses analysées
+
+      <input
+        type="number"
+        id="filtreNombreCoursesRecentes"
+        min="1"
+        max="50"
+        value="10"
+      >
+    </label>
+
+
+    <div class="ligne-filtre-pourcentage">
+
+      <span>
+        Victoires
+      </span>
+
+      <label>
+        Min
+        <input
+          type="number"
+          id="filtrePctVictoires"
+          min="0"
+          max="100"
+          placeholder="%"
+        >
+      </label>
+
+    </div>
+
+
+    <div class="ligne-filtre-pourcentage">
+
+      <span>
+        Top 3
+      </span>
+
+      <label>
+        Min
+        <input
+          type="number"
+          id="filtrePctTop3"
+          min="0"
+          max="100"
+          placeholder="%"
+        >
+      </label>
+
+    </div>
+
+
+    <div class="ligne-filtre-pourcentage">
+
+      <span>
+        Top 7
+      </span>
+
+      <label>
+        Min
+        <input
+          type="number"
+          id="filtrePctTop7"
+          min="0"
+          max="100"
+          placeholder="%"
+        >
+      </label>
+
+    </div>
+
+
+    <div class="ligne-filtre-pourcentage">
+
+      <span>
+        Non classé
+      </span>
+
+      <label>
+        Max
+        <input
+          type="number"
+          id="filtrePctNC"
+          min="0"
+          max="100"
+          placeholder="%"
+        >
+      </label>
+
+    </div>
+
+
+    <div class="ligne-filtre-pourcentage">
+
+      <span>
+        Disqualifié
+      </span>
+
+      <label>
+        Max
+        <input
+          type="number"
+          id="filtrePctDisqualifie"
+          min="0"
+          max="100"
+          placeholder="%"
+        >
+      </label>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!--
+<div class="groupe-filtres filtre-securite">
+
+  <h4>
+    Sécurisation des correspondances
+  </h4>
+
+  <label class="filtre-option">
+    <input
+      type="checkbox"
+      id="filtreMemeDiscipline"
+      checked
+    >
+    <span>
+      Même discipline
+    </span>
+  </label>
+
+  <label class="filtre-option">
+    <input
+      type="checkbox"
+      id="filtreMemePays"
+      checked
+    >
+    <span>
+      Même pays
+    </span>
+  </label>
+
+  <div class="filtre-avertissement">
+    ⚠ La désactivation de ces filtres peut entraîner
+    des correspondances incorrectes entre chevaux
+    portant le même nom.
+  </div>
+
+</div>
+-->
+
+    <!-- ACTIONS -->
+
+    <div class="actions-filtres">
+
+      <button
+        type="button"
+        id="reinitialiserFiltres"
+        class="bouton-secondaire"
+      >
+        Réinitialiser
+      </button>
+
+      <button
+        type="button"
+        id="appliquerFiltres"
+        class="bouton-principal"
+      >
+        Appliquer
+      </button>
+
+    </div>
+
+   
+
+  </div>
+
+</div>
 
 
 </div>

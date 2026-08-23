@@ -291,6 +291,11 @@
 
     <div class="groupe-filtres">
 
+  <div
+  class="groupe-filtres"
+  id="groupeFiltreReduction"
+>
+
   <h4>
     Réduction kilométrique
   </h4>
@@ -306,9 +311,7 @@
       >
     </label>
 
-    <span>
-      à
-    </span>
+    <span>à</span>
 
     <label>
       À
@@ -318,6 +321,59 @@
         placeholder="1'16''0"
       >
     </label>
+
+  </div>
+
+  <div class="filtre-description">
+    Limite l'historique selon la réduction kilométrique.
+  </div>
+
+</div>
+
+<div
+  class="groupe-filtres"
+  id="groupeFiltrePoids"
+  style="display: none;"
+>
+
+  <h4>
+    Poids
+  </h4>
+
+  <div class="filtre-plage">
+
+    <label>
+      Min
+      <input
+        type="number"
+        id="filtrePoidsMin"
+        step="0.5"
+        placeholder="52"
+      >
+    </label>
+
+    <span>à</span>
+
+    <label>
+      Max
+      <input
+        type="number"
+        id="filtrePoidsMax"
+        step="0.5"
+        placeholder="60"
+      >
+    </label>
+
+    <span>kg</span>
+
+  </div>
+
+  <div class="filtre-description">
+    Limite l'historique aux performances réalisées
+    dans la plage de poids indiquée.
+  </div>
+
+</div>
 
   </div>
 

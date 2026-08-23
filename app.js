@@ -509,6 +509,26 @@
       lignesCourse
     ) {
 
+      console.log(
+  "=== GRAPHIQUE GAINS ===",
+  "Nombre de lignes reçues :",
+  lignesCourse.length
+);
+
+console.log(
+  "Courses reçues :",
+  lignesCourse.map(
+    function(ligne) {
+      return {
+        cheval: ligne.Cheval,
+        date: ligne.DateHistorique,
+        reduction: ligne.RéductionKm,
+        gain: ligne.GainEstimé
+      };
+    }
+  )
+);
+
       const partants =
         obtenirPartantsUniques(
           lignesCourse
@@ -2941,18 +2961,77 @@ function obtenirLignesChevauxSelectionnes() {
 }
 
 function mettreAJourGraphiquesSelection() {
-0
-console.log(
-  "=== ENTREE mettreAJourGraphiquesSelection ==="
-);
-  /*
-   * Données correspondant aux
-   * chevaux actuellement sélectionnés.
-   */
+
   let lignesFiltrees =
     obtenirLignesChevauxSelectionnes();
 
 
+  /*
+   * ==========================================
+   * DISCIPLINE DE LA COURSE ACTUELLE
+   * ==========================================
+   *
+   * On utilise en priorité lignesCourseCourante
+   * pour ne pas perdre la discipline après
+   * application d'un autre filtre.
+   */
+
+  const ligneReference =
+    lignesCourseCourante?.[0] ||
+    lignesFiltrees?.[0] ||
+    null;
+
+
+  const disciplineCourante =
+    String(
+      ligneReference?.Discipline || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  const estCourseTrot =
+    disciplineCourante.includes(
+      "TROT"
+    );
+
+
+  const estCourseGalop =
+    disciplineCourante.includes(
+      "GALOP"
+    );
+
+
+  console.log(
+    "DISCIPLINE COURSE :",
+    disciplineCourante,
+    "| TROT :",
+    estCourseTrot,
+    "| GALOP :",
+    estCourseGalop
+  );
+
+
+  adapterFiltresSelonDiscipline(
+    lignesFiltrees
+  );
+
+  /*
+   * Ensuite vos filtres existants...
+   */
+
+  /*
+   * Affichage des filtres
+   * selon la discipline
+   */
+  adapterFiltresSelonDiscipline(
+    lignesFiltrees
+  );
+
+
+  adapterFiltresSelonDiscipline(
+  lignesFiltrees
+);
 
   console.log(
   "TEST COURSE COURANTE :",
@@ -3173,6 +3252,7 @@ if (
   );
 }
   /*
+/*
  * ==========================================
  * FILTRE DISTANCE
  * ==========================================
@@ -3215,9 +3295,11 @@ if (
   );
 }
 
+
 /*
  * ==========================================
  * FILTRE : RÉDUCTION KILOMÉTRIQUE
+ * TROT UNIQUEMENT
  * ==========================================
  */
 
@@ -3232,9 +3314,21 @@ const reductionMax =
   )?.value.trim() || "";
 
 
+console.log(
+  "LECTURE REDUCTION :",
+  reductionMin,
+  reductionMax,
+  "| TROT :",
+  estCourseTrot
+);
+
+
 if (
-  reductionMin !== "" ||
-  reductionMax !== ""
+  estCourseTrot &&
+  (
+    reductionMin !== "" ||
+    reductionMax !== ""
+  )
 ) {
 
   const minSecondes =
@@ -3244,12 +3338,21 @@ if (
         )
       : null;
 
+
   const maxSecondes =
     reductionMax !== ""
       ? convertirReductionEnSecondes(
           reductionMax
         )
       : null;
+
+
+  console.log(
+    "CONVERSION REDUCTION :",
+    minSecondes,
+    "→",
+    maxSecondes
+  );
 
 
   console.log(
@@ -3268,7 +3371,10 @@ if (
           );
 
 
-        if (valeur === null) {
+        if (
+          valeur === null ||
+          !Number.isFinite(valeur)
+        ) {
           return false;
         }
 
@@ -3301,6 +3407,52 @@ if (
 }
 
 
+/*
+ * ==========================================
+ * FILTRE : POIDS
+ * GALOP UNIQUEMENT
+ * ==========================================
+ */
+
+const poidsMin =
+  document.getElementById(
+    "filtrePoidsMin"
+  )?.value.trim() || "";
+
+const poidsMax =
+  document.getElementById(
+    "filtrePoidsMax"
+  )?.value.trim() || "";
+
+
+if (
+  estCourseGalop &&
+  (
+    poidsMin !== "" ||
+    poidsMax !== ""
+  )
+) {
+
+  console.log(
+    "AVANT filtre poids :",
+    lignesFiltrees.length
+  );
+
+
+  lignesFiltrees =
+    filtrerParPlageNumerique(
+      lignesFiltrees,
+      "PoidsHistorique",
+      poidsMin,
+      poidsMax
+    );
+
+
+  console.log(
+    "APRES filtre poids :",
+    lignesFiltrees.length
+  );
+}
 /*
  * ==========================================
  * FILTRE ALLOCATION
@@ -3540,7 +3692,9 @@ if (
     lignesFiltrees
   );
 
-  afficherResumeFiltresActifs();
+  afficherResumeFiltresActifs(
+  lignesFiltrees
+);
 
 }
 
@@ -4959,63 +5113,6 @@ function afficherGraphiqueComparatif(
   );
 }
 
-function convertirReductionEnSecondes(
-  texte
-) {
-
-  if (!texte) {
-    return null;
-  }
-
-  const valeur =
-    String(texte)
-      .trim()
-      .replace(/’/g, "'");
-
-
-  /*
-   * Formats acceptés :
-   *
-   * 01'15''70
-   * 1'15''7
-   * 1'15"7
-   * 1'15"70
-   */
-  const match =
-    valeur.match(
-      /(\d+)'(\d{1,2})(?:''|["”])?(\d{1,2})?/
-    );
-
-
-  if (!match) {
-    return null;
-  }
-
-
-  const minutes =
-    Number(match[1]);
-
-  const secondes =
-    Number(match[2]);
-
-  /*
-   * 70 -> 0.70
-   * 7  -> 0.7
-   */
-  const fraction =
-    match[3]
-      ? Number(
-          "0." + match[3]
-        )
-      : 0;
-
-
-  return (
-    minutes * 60 +
-    secondes +
-    fraction
-  );
-}
 
 function formaterReductionSecondes(
   secondes
@@ -7035,6 +7132,8 @@ if (caseMemeJockey) {
         "filtreAllocationMax",
         "filtrePartantsMin",
         "filtrePartantsMax",
+        "filtrePoidsMin",
+        "filtrePoidsMax",
 
           /*
    * Résultats récents
@@ -7929,11 +8028,12 @@ function convertirReductionEnSecondes(
   valeur
 ) {
 
-  const texte =
-    String(valeur || "")
+  let texte =
+    String(
+      valeur || ""
+    )
       .trim()
-      .replace(/\s/g, "")
-      .replace(/''/g, '"');
+      .replace(/\s/g, "");
 
 
   if (!texte) {
@@ -7942,45 +8042,75 @@ function convertirReductionEnSecondes(
 
 
   /*
-   * Exemples :
-   * 01'15''40
-   * 1'15''4
-   * 1'12''0
+   * Normalisation des différents formats :
+   *
+   * 1'13''0
+   * 01'13''00
+   * 1"13"0
+   * 1’13’’0
+   */
+
+  texte =
+    texte
+      .replace(/[’‘]/g, "'")
+      .replace(/"/g, "'");
+
+
+  /*
+   * Après normalisation :
+   *
+   * 1"13"0
+   * devient
+   * 1'13'0
+   *
+   * 1'13''0
+   * reste
+   * 1'13''0
    */
 
   const match =
     texte.match(
-      /(\d+)'(\d+)"(\d+)?/
+      /^(\d+)'(\d+)'{1,2}(\d+)$/
     );
 
 
   if (!match) {
+
+    console.log(
+      "REDUCTION NON RECONNUE :",
+      valeur
+    );
+
     return null;
   }
 
 
   const minutes =
-    Number(match[1]);
+    Number(
+      match[1]
+    );
 
   const secondes =
-    Number(match[2]);
+    Number(
+      match[2]
+    );
 
-  const decimales =
-    match[3]
-      ? Number(
-          "0." + match[3]
-        )
-      : 0;
+  const fraction =
+    Number(
+      "0." + match[3]
+    );
 
 
   return (
     minutes * 60 +
     secondes +
-    decimales
+    fraction
   );
 }
 
-function afficherResumeFiltresActifs() {
+function afficherResumeFiltresActifs(
+  lignesFiltrees
+) {
 
   const conteneur =
     document.getElementById(
@@ -7992,8 +8122,50 @@ function afficherResumeFiltresActifs() {
   }
 
 
+  /*
+   * Discipline de la course courante
+   */
+  const disciplineCourante =
+    String(
+      lignesFiltrees?.[0]?.Discipline || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  const estCourseTrot =
+    disciplineCourante.includes(
+      "TROT"
+    );
+
+
   const filtres = [];
 
+  /*
+ * ==========================================
+ * DISCIPLINE COURSE COURANTE
+ * Pour le résumé des filtres
+ * ==========================================
+ */
+
+const disciplineResume =
+  String(
+    lignesFiltrees?.[0]?.Discipline || ""
+  )
+    .trim()
+    .toUpperCase();
+
+
+const estTrotResume =
+  disciplineResume.includes(
+    "TROT"
+  );
+
+
+const estGalopResume =
+  disciplineResume.includes(
+    "GALOP"
+  );
 
   /*
    * ==========================================
@@ -8287,69 +8459,189 @@ function afficherResumeFiltresActifs() {
   }
 
 
-  /*
-   * ==========================================
-   * RÉDUCTION KILOMÉTRIQUE
-   * ==========================================
-   */
 
-  const reductionMin =
-    document.getElementById(
-      "filtreReductionMin"
-    )?.value || "";
+ /*
+ * ==========================================
+ * FILTRE : RÉDUCTION KILOMÉTRIQUE
+ * TROT UNIQUEMENT
+ * ==========================================
+ */
 
-  const reductionMax =
-    document.getElementById(
-      "filtreReductionMax"
-    )?.value || "";
+const reductionMin =
+  document.getElementById(
+    "filtreReductionMin"
+  )?.value.trim() || "";
+
+const reductionMax =
+  document.getElementById(
+    "filtreReductionMax"
+  )?.value.trim() || "";
 
 
-  if (
+console.log(
+  "TEST FILTRE REDUCTION :",
+  {
+    estCourseTrot,
+    reductionMin,
+    reductionMax,
+    exempleReduction:
+      lignesFiltrees[0]?.RéductionKm
+  }
+);
+
+
+if (
+  estTrotResume &&
+  (
     reductionMin !== "" ||
     reductionMax !== ""
-  ) {
+  )
+) {
 
-    let texte =
-      "Réduction km : ";
-
-    if (
-      reductionMin !== "" &&
-      reductionMax !== ""
-    ) {
-
-      texte +=
-        reductionMin +
-        " – " +
-        reductionMax;
-
-    } else if (
-      reductionMin !== ""
-    ) {
-
-      texte +=
-        "≥ " +
-        reductionMin;
-
-    } else {
-
-      texte +=
-        "≤ " +
-        reductionMax;
-    }
+  const minSecondes =
+    reductionMin !== ""
+      ? convertirReductionEnSecondes(
+          reductionMin
+        )
+      : null;
 
 
-    filtres.push({
-      texte: texte,
-      ids: [
-        "filtreReductionMin",
-        "filtreReductionMax"
-      ],
-      type: "plage"
-    });
+  const maxSecondes =
+    reductionMax !== ""
+      ? convertirReductionEnSecondes(
+          reductionMax
+        )
+      : null;
 
+
+  console.log(
+    "CONVERSION REDUCTION :",
+    reductionMin,
+    "=",
+    minSecondes,
+    "|",
+    reductionMax,
+    "=",
+    maxSecondes
+  );
+
+
+  console.log(
+    "AVANT filtre réduction :",
+    lignesFiltrees.length
+  );
+
+
+  lignesFiltrees =
+    lignesFiltrees.filter(
+      function(ligne) {
+
+        const valeur =
+          convertirReductionEnSecondes(
+            ligne.RéductionKm
+          );
+
+
+        if (
+          valeur === null ||
+          !Number.isFinite(valeur)
+        ) {
+          return false;
+        }
+
+
+        if (
+          minSecondes !== null &&
+          valeur < minSecondes
+        ) {
+          return false;
+        }
+
+
+        if (
+          maxSecondes !== null &&
+          valeur > maxSecondes
+        ) {
+          return false;
+        }
+
+
+        return true;
+      }
+    );
+
+
+  console.log(
+    "APRES filtre réduction :",
+    lignesFiltrees.length
+  );
+
+
+  console.log(
+    "EXEMPLE APRES FILTRE :",
+    lignesFiltrees[0]?.RéductionKm
+  );
+}
+
+
+/*
+ * ==========================================
+ * FILTRE : POIDS
+ * GALOP UNIQUEMENT
+ * ==========================================
+ */
+
+const poidsMin =
+  document.getElementById(
+    "filtrePoidsMin"
+  )?.value.trim() || "";
+
+const poidsMax =
+  document.getElementById(
+    "filtrePoidsMax"
+  )?.value.trim() || "";
+
+
+console.log(
+  "TEST FILTRE POIDS :",
+  {
+    estGalopResume,
+    poidsMin,
+    poidsMax,
+    exemplePoids:
+      lignesFiltrees[0]?.PoidsHistorique
   }
+);
 
 
+if (
+  estGalopResume &&
+  (
+    poidsMin !== "" ||
+    poidsMax !== ""
+  )
+) {
+
+  console.log(
+    "AVANT filtre poids :",
+    lignesFiltrees.length
+  );
+
+
+  lignesFiltrees =
+    filtrerParPlageNumerique(
+      lignesFiltrees,
+      "PoidsHistorique",
+      poidsMin,
+      poidsMax
+    );
+
+
+  console.log(
+    "APRES filtre poids :",
+    lignesFiltrees.length
+  );
+}
   /*
    * ==========================================
    * CRÉATION DES BADGES
@@ -8729,4 +9021,68 @@ function obtenirDisciplineGenerale(
 
 
   return "";
+}
+
+function adapterFiltresSelonDiscipline(
+  lignes
+) {
+
+  const groupeReduction =
+    document.getElementById(
+      "groupeFiltreReduction"
+    );
+
+  const groupePoids =
+    document.getElementById(
+      "groupeFiltrePoids"
+    );
+
+
+  const ligneReference =
+    lignesCourseCourante?.[0] ||
+    lignes?.[0] ||
+    null;
+
+
+  const discipline =
+    String(
+      ligneReference?.Discipline || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  const estTrot =
+    discipline.includes(
+      "TROT"
+    );
+
+  const estGalop =
+    discipline.includes(
+      "GALOP"
+    );
+
+
+  if (groupeReduction) {
+
+    groupeReduction.style.display =
+      estTrot
+        ? ""
+        : "none";
+  }
+
+
+  if (groupePoids) {
+
+    groupePoids.style.display =
+      estGalop
+        ? ""
+        : "none";
+  }
+
+
+  console.log(
+    "FILTRES DISCIPLINE :",
+    discipline
+  );
 }

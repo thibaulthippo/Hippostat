@@ -1220,18 +1220,16 @@ select { width: 100%; padding: 10px 12px; border: 1px solid #cbd3dc; border-radi
 }
 
 
-/* ==========================================
-   PANNEAU FILTRES AVANCÉS
-   ========================================== */
-
 .panneau-filtres-avances {
 
   position: fixed;
 
   top: 0;
+
   right: -430px;
 
   width: 390px;
+
   max-width: 92vw;
 
   height: 100vh;
@@ -1249,6 +1247,13 @@ select { width: 100%; padding: 10px 12px; border: 1px solid #cbd3dc; border-radi
 
   transition:
     right 0.25s ease;
+
+  /* Marge intérieure */
+  padding-left: 20px;
+  padding-right: 20px;
+
+  /* Évite que le padding augmente la largeur du panneau */
+  box-sizing: border-box;
 }
 
 
@@ -1389,13 +1394,25 @@ select { width: 100%; padding: 10px 12px; border: 1px solid #cbd3dc; border-radi
 
 
 .actions-filtres {
+  position: sticky;
+  bottom: 0;
+
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 
-  padding-bottom: 20px;
-}
+  margin: 20px -18px -18px;
+  padding: 14px 18px;
 
+  background: rgba(255, 255, 255, 0.97);
+
+  border-top: 1px solid #e2e8f0;
+
+  box-shadow:
+    0 -4px 12px rgba(15, 23, 42, 0.08);
+
+  z-index: 5;
+}
 
 .bouton-principal,
 .bouton-secondaire {
@@ -1407,6 +1424,27 @@ select { width: 100%; padding: 10px 12px; border: 1px solid #cbd3dc; border-radi
   font-weight: 700;
 
   cursor: pointer;
+}
+
+.actions-filtres {
+  position: sticky;
+  bottom: 0;
+
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin: 20px -18px -18px;
+  padding: 14px 18px;
+
+  background: rgba(255, 255, 255, 0.97);
+
+  border-top: 1px solid #e2e8f0;
+
+  box-shadow:
+    0 -4px 12px rgba(15, 23, 42, 0.08);
+
+  z-index: 10;
 }
 
 

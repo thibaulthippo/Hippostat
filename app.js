@@ -186,6 +186,71 @@
           );
         }
 
+            /**************************************************
+     * CHARGEMENT DU CSV
+     **************************************************/
+    async function chargerProgramme() {
+
+      try {
+
+        const reponse =
+          await fetch(FICHIER_CSV);
+
+        if (!reponse.ok) {
+
+          throw new Error(
+            "Impossible de charger le CSV : HTTP " +
+            reponse.status
+          );
+        }
+
+        const texte =
+          await reponse.text();
+
+        const resultat =
+          Papa.parse(texte, {
+            header: true,
+            delimiter: ";",
+            skipEmptyLines: true,
+            transformHeader: function(entete) {
+
+              /*
+               * Suppression éventuelle du BOM UTF-8.
+               */
+              return String(entete || "")
+                .replace(/^\uFEFF/, "")
+                .trim();
+            }
+          });
+
+        if (
+          resultat.errors &&
+          resultat.errors.length > 0
+        ) {
+
+          console.warn(
+            "Avertissements CSV :",
+            resultat.errors
+          );
+        }
+
+        donneesProgramme =
+          resultat.data.filter(function(ligne) {
+            
+
+            return (
+              ligne.CourseIDProgramme &&
+              ligne.Cheval
+            );
+          });
+
+        if (donneesProgramme.length === 0) {
+
+          throw new Error(
+            "Le CSV ne contient aucune donnée exploitable."
+          );
+        }
+
         let lignesCourseCourante = [];
 
         let chevauxSelectionnes =
@@ -255,6 +320,89 @@
         );
       }
     }
+
+    console.log(
+  "TEST PAYS HISTORIQUE :",
+  donneesProgramme[0]?.Pays,
+  donneesProgramme[0]?.PaysHistorique
+);
+
+
+        let lignesCourseCourante = [];
+
+        let chevauxSelectionnes =
+        new Set();
+
+        remplirListeCourses();
+
+        document
+          .getElementById("chargement")
+          .classList.add("hidden");
+
+        document
+          .getElementById("contenu")
+          .classList.remove("hidden");
+
+        const select =
+          document.getElementById(
+            "selectionCourse"
+          );
+
+        select.addEventListener(
+          "change",
+          function() {
+
+            afficherCourse(
+              select.value
+            );
+   gtag(
+      "event",
+      "changement_course",
+      {
+        course_id:
+          select.value
+      }
+    );
+
+              
+          }
+        );
+
+        /*
+         * Affichage automatique de la première course.
+         */
+        if (select.options.length > 0) {
+
+          afficherCourse(
+            select.value
+          );
+        }
+
+      } catch (erreur) {
+
+        console.error(erreur);
+
+        document
+          .getElementById("chargement")
+          .classList.add("hidden");
+
+        const zoneErreur =
+          document.getElementById("erreur");
+
+        zoneErreur.textContent =
+          erreur.message;
+
+        zoneErreur.classList.remove(
+          "hidden"
+        );
+      }
+    }
+
+    console.log(
+  "TEST PAYS HISTORIQUE :",
+  donneesProgramme[0]?.Pays,
+  donneesProgramme[0]?.PaysHistorique
+);
 
 
     /**************************************************
@@ -2964,6 +3112,78 @@ function mettreAJourGraphiquesSelection() {
 
   let lignesFiltrees =
     obtenirLignesChevauxSelectionnes();
+
+  /*
+ * ==========================================
+ * FILTRE DE SÉCURITÉ : MÊME PAYS
+ * Activé par défaut
+ * ==========================================
+ */
+
+const caseMemePays =
+  document.getElementById(
+    "filtreMemePays"
+  );
+
+
+if (
+  caseMemePays &&
+  caseMemePays.checked
+) {
+
+  console.log(
+    "AVANT filtre pays :",
+    lignesFiltrees.length
+  );
+
+
+  lignesFiltrees =
+    lignesFiltrees.filter(
+      function(ligne) {
+
+        /*
+         * Ligne sans historique :
+         * on la conserve.
+         */
+        if (
+          !ligne.CourseIDHistorique
+        ) {
+          return true;
+        }
+
+
+        const paysProgramme =
+          normaliserPays(
+            ligne.Pays
+          );
+
+        const paysHistorique =
+          normaliserPays(
+            ligne.PaysHistorique
+          );
+
+
+        if (
+          !paysProgramme ||
+          !paysHistorique
+        ) {
+          return false;
+        }
+
+
+        return (
+          paysProgramme ===
+          paysHistorique
+        );
+      }
+    );
+
+
+  console.log(
+    "APRES filtre pays :",
+    lignesFiltrees.length
+  );
+}
 
 
   /*
@@ -9085,4 +9305,20 @@ function adapterFiltresSelonDiscipline(
     "FILTRES DISCIPLINE :",
     discipline
   );
+}
+
+function normaliserPays(
+  valeur
+) {
+
+  return String(
+    valeur || ""
+  )
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    );
 }
